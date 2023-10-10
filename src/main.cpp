@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     int start_idx = std::stoi(start_idx_str);
     if (start_idx < 0 || start_idx >= nodes.size())
     {
-        std::cout << "Invalid start index" << std::endl;
+        std::cout << "Invali start index" << std::endl;
         return 1;
     }
 
@@ -35,7 +35,7 @@ int main(int argc, char **argv)
     double start_perc = std::stoi(start_perc_str) / 100.0;
     int visit_count = start_perc * nodes.size();
 
-    if (visit_count < 0 || visit_count > nodes.size())
+    if (visit_count < 3 || visit_count > nodes.size())
     {
         std::cout << "Invalid start perc count" << std::endl;
         return 1;

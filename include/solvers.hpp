@@ -41,7 +41,14 @@ private:
     void beforeSolve(const Nodes &nodes, int start_idx) override;
     Solution _solve(const Nodes &nodes, int start_idx, int visit_count) override;
 
-    std::vector<std::vector<int>> m_scores;
+protected:
+    std::vector<std::vector<int>> m_distances;
+};
+
+class GreedyCycleSolver : public NearestNeighbourSolver
+{
+private:
+    Solution _solve(const Nodes &nodes, int start_idx, int visit_count) override;
 };
 
 std::unique_ptr<AbstractSolver> createSolver(char name);
