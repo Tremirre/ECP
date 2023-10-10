@@ -33,4 +33,16 @@ add_executable(test_random
     ${SOURCES}
 )
 
+add_executable(test_node
+    tests/test_node.cpp
+    ${SOURCES}
+)
+
+add_executable(test_solvers
+    tests/test_solvers.cpp
+    ${SOURCES}
+)
+
 add_test(TestRandom ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_random)
+add_test(TestNode ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_node)
+add_test(TestSolvers ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_solvers)
