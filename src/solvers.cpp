@@ -91,14 +91,14 @@ void NearestNeighbourSolver::beforeSolve(const Nodes &nodes, int start_idx)
     }
 }
 
-AbstractSolver *createSolver(char name)
+std::unique_ptr<AbstractSolver> createSolver(char name)
 {
     switch (name)
     {
     case 'r':
-        return new RandomSolver();
+        return std::make_unique<RandomSolver>();
     case 'n':
-        return new NearestNeighbourSolver();
+        return std::make_unique<NearestNeighbourSolver>();
     default:
         throw std::runtime_error("Invalid solver name");
     }

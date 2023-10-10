@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <memory>
 #include "random.hpp"
 #include "node.hpp"
 
@@ -43,4 +44,4 @@ private:
     std::vector<std::vector<int>> m_scores;
 };
 
-AbstractSolver *createSolver(char name);
+std::unique_ptr<AbstractSolver> createSolver(char name);
