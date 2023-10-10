@@ -41,11 +41,15 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    NearestNeighbourSolver solver;
-    Solution solution = solver.solve(nodes, start_idx, visit_count);
+    char solver_name = args.getCmdOption("-s")[0];
+    AbstractSolver *solver = createSolver(solver_name);
+
+    Solution solution = solver->solve(nodes, start_idx, visit_count);
     exportSolutionToFile(solution, output_filename);
     std::cout << "Used nodes: " << solution.size() << " / " << nodes.size() << std::endl;
     std::cout << "Score: " << evaluateSolution(nodes, solution) << std::endl;
     std::cout << "Solution exported to " << output_filename << std::endl;
+
+    delete solver;
     return 0;
 }

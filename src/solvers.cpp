@@ -54,7 +54,7 @@ Solution NearestNeighbourSolver::_solve(const Nodes &nodes, int start_idx, int v
 
     for (int i = 0; i < visit_count - 1; i++)
     {
-        int min_distance = std::numeric_limits<int>::max();
+        int min_score = std::numeric_limits<int>::max();
         int min_idx = -1;
         for (int j = 0; j < nodes.size(); j++)
         {
@@ -62,10 +62,10 @@ Solution NearestNeighbourSolver::_solve(const Nodes &nodes, int start_idx, int v
             {
                 continue;
             }
-            int distance = m_scores[current_idx][j];
-            if (distance < min_distance)
+            int score = m_scores[current_idx][j];
+            if (score < min_score)
             {
-                min_distance = distance;
+                min_score = score;
                 min_idx = j;
             }
         }
@@ -88,5 +88,18 @@ void NearestNeighbourSolver::beforeSolve(const Nodes &nodes, int start_idx)
             m_scores[i][j] = distance + nodes[i].getWeight();
             m_scores[j][i] = distance + nodes[j].getWeight();
         }
+    }
+}
+
+AbstractSolver *createSolver(char name)
+{
+    switch (name)
+    {
+    case 'r':
+        return new RandomSolver();
+    case 'n':
+        return new NearestNeighbourSolver();
+    default:
+        throw std::runtime_error("Invalid solver name");
     }
 }

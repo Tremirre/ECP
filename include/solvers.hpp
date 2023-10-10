@@ -42,3 +42,5 @@ private:
 
     std::vector<std::vector<int>> m_scores;
 };
+
+AbstractSolver *createSolver(char name);
