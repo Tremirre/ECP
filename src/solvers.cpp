@@ -108,20 +108,14 @@ Solution GreedyCycleSolver::_solve(const Nodes &nodes, int start_idx, int visit_
 {
     Solution solution;
     solution.push_back(start_idx);
-    int nearest_to_start_idx;
-    for (int i = 0; i < nodes.size(); i++)
-    {
-        if (i == start_idx)
-            continue;
-    }
 
     std::vector<bool> visited(nodes.size(), false);
-    std::vector<int> added_indices;
     visited[start_idx] = true;
 
     while (solution.size() < visit_count)
     {
         int nearest_idx = -1;
+        int added_idx = -1;
         int min_increase = std::numeric_limits<int>::max();
 
         if (solution.size() == 1)
@@ -157,15 +151,14 @@ Solution GreedyCycleSolver::_solve(const Nodes &nodes, int start_idx, int visit_
                 {
                     min_increase = increase;
                     nearest_idx = i;
-                    added_indices.clear();
-                    added_indices.push_back(j + 1);
+                    added_idx = j;
                 }
             }
         }
 
         if (nearest_idx != -1)
         {
-            solution.insert(solution.begin() + added_indices.front(), nearest_idx);
+            solution.insert(solution.begin() + added_idx + 1, nearest_idx);
             visited[nearest_idx] = true;
         }
     }
