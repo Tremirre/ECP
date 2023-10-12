@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <random>
 #include <fstream>
+#include <iostream>
 
 #include "solvers.hpp"
 
@@ -77,6 +78,13 @@ Solution NearestNeighbourSolver::_solve(const Nodes &nodes, int start_idx, int v
             }
         }
         solution.push_back(min_idx);
+
+        for (auto s_idx : solution)
+        {
+            std::cout << s_idx << ' ';
+        }
+        std::cout << '\n';
+
         visited[min_idx] = true;
         current_idx = min_idx;
     }
@@ -102,6 +110,13 @@ Solution GreedyCycleSolver::_solve(const Nodes &nodes, int start_idx, int visit_
 {
     Solution solution;
     solution.push_back(start_idx);
+    int nearest_to_start_idx;
+    for (int i = 0; i < nodes.size(); i++)
+    {
+        if (i == start_idx)
+            continue;
+    }
+
     std::vector<bool> visited(nodes.size(), false);
     std::vector<int> added_indices;
     visited[start_idx] = true;
@@ -111,9 +126,28 @@ Solution GreedyCycleSolver::_solve(const Nodes &nodes, int start_idx, int visit_
         int nearest_idx = -1;
         int min_increase = std::numeric_limits<int>::max();
 
+        if (solution.size() == 1)
+        {
+            for (int i = 0; i < nodes.size(); i++)
+            {
+                if (i == start_idx)
+                    continue;
+
+                int increase = nodes[start_idx].distanceTo(nodes[i]) + nodes[i].getWeight();
+                if (increase < min_increase)
+                {
+                    nearest_idx = i;
+                    min_increase = increase;
+                }
+            }
+            solution.push_back(nearest_idx);
+            visited[nearest_idx] = true;
+            continue;
+        }
+
         for (int i = 0; i < nodes.size(); ++i)
         {
-            if (!visited[i])
+            if (visited[i])
                 continue;
             for (int j = 0; j < solution.size(); ++j)
             {
