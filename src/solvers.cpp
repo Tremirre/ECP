@@ -79,12 +79,6 @@ Solution NearestNeighbourSolver::_solve(const Nodes &nodes, int start_idx, int v
         }
         solution.push_back(min_idx);
 
-        for (auto s_idx : solution)
-        {
-            std::cout << s_idx << ' ';
-        }
-        std::cout << '\n';
-
         visited[min_idx] = true;
         current_idx = min_idx;
     }
