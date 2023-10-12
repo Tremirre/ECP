@@ -5,19 +5,6 @@
 
 #include "solvers.hpp"
 
-void exportSolutionToFile(const Solution &solution, const std::string &filename)
-{
-    std::ofstream file(filename);
-    if (!file.is_open())
-    {
-        throw std::runtime_error("Failed to open file");
-    }
-    for (int i = 0; i < solution.size(); ++i)
-    {
-        file << solution[i] << '\n';
-    }
-}
-
 int evaluateSolution(const Nodes &nodes, const Solution &solution)
 {
     int score = 0;
@@ -30,6 +17,23 @@ int evaluateSolution(const Nodes &nodes, const Solution &solution)
     distance = nodes[solution[solution.size() - 1]].distanceTo(nodes[solution[0]]);
     score += distance;
     return score;
+}
+
+void exportSolutionToFile(
+    const Solution &solution,
+    const std::string &filename,
+    int score)
+{
+    std::ofstream file(filename);
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Failed to open file");
+    }
+    for (int i = 0; i < solution.size(); ++i)
+    {
+        file << solution[i] << '\n';
+    }
+    file << score << '\n';
 }
 
 Solution AbstractSolver::solve(const Nodes &nodes, int start_idx, int visit_count)

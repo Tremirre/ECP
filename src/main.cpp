@@ -45,9 +45,10 @@ int main(int argc, char **argv)
     auto solver = createSolver(solver_name);
 
     Solution solution = solver->solve(nodes, start_idx, visit_count);
-    exportSolutionToFile(solution, output_filename);
+    int score = evaluateSolution(nodes, solution);
+    exportSolutionToFile(solution, output_filename, score);
     std::cout << "Used nodes: " << solution.size() << " / " << nodes.size() << std::endl;
-    std::cout << "Score: " << evaluateSolution(nodes, solution) << std::endl;
+    std::cout << "Score: " << score << std::endl;
     std::cout << "Solution exported to " << output_filename << std::endl;
     return 0;
 }

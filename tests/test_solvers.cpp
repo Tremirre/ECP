@@ -34,7 +34,8 @@ static const Nodes cases_3 = {
 void testExportSolutionToFile()
 {
     Solution solution = {0, 1, 2, 3, 4};
-    exportSolutionToFile(solution, "test_solution.csv");
+    int score = 100;
+    exportSolutionToFile(solution, "test_solution.csv", score);
 
     std::ifstream test_file("test_solution.csv");
 
@@ -44,8 +45,8 @@ void testExportSolutionToFile()
     int i = 0;
     while (std::getline(test_file, line))
     {
-        assert(std::stoi(line) == solution[i]);
-        ++i;
+        int expected = i == 5 ? score : solution[i++];
+        assert(std::stoi(line) == expected);
     }
     test_file.close();
 

@@ -6,9 +6,9 @@
 
 typedef std::vector<int> Solution;
 
-void exportSolutionToFile(const Solution &solution, const std::string &filename);
-
 int evaluateSolution(const Nodes &nodes, const Solution &solution);
+
+void exportSolutionToFile(const Solution &solution, const std::string &filename, int score);
 
 class AbstractSolver
 {
