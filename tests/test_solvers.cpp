@@ -30,8 +30,7 @@ static const Nodes cases_3 = {
     {0, -10, 20},
     {10, 2, 50},
 };
-// 8 2 5 0
-// 2+2+16+16 + 50+50+(-45)+0
+
 void testExportSolutionToFile()
 {
     Solution solution = {0, 1, 2, 3, 4};

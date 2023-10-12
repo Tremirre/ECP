@@ -30,6 +30,7 @@ public:
 private:
     Solution _solve(const Nodes &nodes, int start_idx, int visit_count) override;
     std::default_random_engine &m_rng = getRandomEngine();
+    void beforeSolve(const Nodes &nodes, int start_idx) override;
 };
 
 class NearestNeighbourSolver : public AbstractSolver

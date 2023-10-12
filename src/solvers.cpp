@@ -46,6 +46,11 @@ Solution RandomSolver::_solve(const Nodes &nodes, int start_idx, int visit_count
     return indices;
 }
 
+void RandomSolver::beforeSolve(const Nodes &nodes, int start_idx)
+{
+    m_rng.seed(start_idx + 1000);
+}
+
 Solution NearestNeighbourSolver::_solve(const Nodes &nodes, int start_idx, int visit_count)
 {
     Solution solution;
