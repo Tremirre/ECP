@@ -28,21 +28,12 @@ add_executable(ECP
     ${SOURCES}
 )
 
-add_executable(test_random
-    tests/test_random.cpp
-    ${SOURCES}
-)
 
-add_executable(test_node
-    tests/test_node.cpp
-    ${SOURCES}
-)
+file(GLOB TEST_FILES tests/test*.cpp)
 
-add_executable(test_solvers
-    tests/test_solvers.cpp
-    ${SOURCES}
-)
+foreach(TEST_FILE ${TEST_FILES})
+    get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
+    add_executable(${TEST_NAME} ${TEST_FILE} ${SOURCES})
+    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+endforeach()
 
-add_test(TestRandom ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_random)
-add_test(TestNode ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_node)
-add_test(TestSolvers ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_solvers)
