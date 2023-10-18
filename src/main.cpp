@@ -32,8 +32,8 @@ int main(int argc, char **argv)
 
     std::string start_perc_str = args.getCmdOption("-p");
     start_perc_str = start_perc_str.empty() ? "100" : start_perc_str;
-    double start_perc = std::stoi(start_perc_str) / 100.0;
-    int visit_count = start_perc * nodes.size();
+    double start_perc = std::stod(start_perc_str) / 100.0;
+    int visit_count = std::ceil(start_perc * nodes.size());
 
     if (visit_count < 3 || visit_count > nodes.size())
     {
