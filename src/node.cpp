@@ -27,7 +27,7 @@ int Node::distanceTo(const Node &other) const noexcept
 {
     int dx = m_x - other.getX();
     int dy = m_y - other.getY();
-    return std::sqrt(dx * dx + dy * dy);
+    return std::round(std::sqrt(dx * dx + dy * dy));
 }
 
 Nodes readNodesFromFile(const std::string &filename)

@@ -59,10 +59,9 @@ void testEvaulateSolution()
     Solution solution_2 = {4, 3, 0, 1, 5, 2};
     Solution solution_3 = {8, 2, 5, 0};
 
-    // TODO: verify rounding
     assert(evaluateSolution(cases_1, solution_1) == 27);
-    assert(evaluateSolution(cases_2, solution_2) == 123);
-    assert(evaluateSolution(cases_3, solution_3) == 91);
+    assert(evaluateSolution(cases_2, solution_2) == 128);
+    assert(evaluateSolution(cases_3, solution_3) == 94);
 }
 
 int main()

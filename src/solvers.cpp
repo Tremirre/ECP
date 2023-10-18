@@ -15,7 +15,7 @@ int evaluateSolution(const Nodes &nodes, const Solution &solution)
         score += distance + nodes[solution[i]].getWeight();
     }
     distance = nodes[solution[solution.size() - 1]].distanceTo(nodes[solution[0]]);
-    score += distance;
+    score += distance + nodes[solution[solution.size() - 1]].getWeight();
     return score;
 }
 
