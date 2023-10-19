@@ -10,7 +10,7 @@
         "program": "${workspaceFolder}/build/bin/${workspaceFolderBasename}.exe",
         "args": [
             "-f", "${workspaceFolder}/data/tsp_instances/TSPA.csv",
-            "-s", "g"
+            "-s", "d", "-p", "50"
         ],
         "stopAtEntry": false,
         "cwd": "${fileDirname}",

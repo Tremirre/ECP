@@ -172,10 +172,10 @@ Solution GreedyTwoRegretSolver::_solve(const Nodes &nodes, int start_idx, int vi
                 int increase = m_distances[solution[j]][i] + m_distances[i][solution[next_idx]];
                 increase -= m_distances[solution[j]][solution[next_idx]];
                 increase += nodes[i].getWeight();
-                if (increase < min_increase)
+                if (increase <= min_increase)
                 {
+                    second_min_increase = min_increase;
                     min_increase = increase;
-                    nearest_idx = i;
                     added_idx = j;
                 }
                 else if (increase < second_min_increase)
@@ -183,7 +183,7 @@ Solution GreedyTwoRegretSolver::_solve(const Nodes &nodes, int start_idx, int vi
                     second_min_increase = increase;
                 }
             }
-            int regret = std::round(min_increase * m_first_weight) - std::round(second_min_increase * m_second_weight);
+            int regret = std::round(second_min_increase * m_second_weight) - std::round(min_increase * m_first_weight);
             if (regret > max_regret)
             {
                 max_regret = regret;
