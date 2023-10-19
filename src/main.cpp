@@ -41,8 +41,16 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    std::string weight_first_str = args.getCmdOption("-w1");
+    weight_first_str = weight_first_str.empty() ? "1" : weight_first_str;
+    double weight_first = std::stod(weight_first_str);
+
+    std::string weight_second_str = args.getCmdOption("-w2");
+    weight_second_str = weight_second_str.empty() ? "1" : weight_second_str;
+    double weight_second = std::stod(weight_second_str);
+
     char solver_name = args.getCmdOption("-s")[0];
-    auto solver = createSolver(solver_name);
+    auto solver = createSolver(solver_name, weight_first, weight_second);
 
     Solution solution = solver->solve(nodes, start_idx, visit_count);
     int score = evaluateSolution(nodes, solution);

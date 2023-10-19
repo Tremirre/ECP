@@ -3,8 +3,7 @@
 #include <memory>
 #include "random.hpp"
 #include "node.hpp"
-
-typedef std::vector<int> Solution;
+#include "initializers.hpp"
 
 int evaluateSolution(const Nodes &nodes, const Solution &solution);
 
@@ -52,4 +51,16 @@ private:
     Solution _solve(const Nodes &nodes, int start_idx, int visit_count) override;
 };
 
-std::unique_ptr<AbstractSolver> createSolver(char name);
+class GreedyTwoRegretSolver : public GreedyCycleSolver
+{
+public:
+    GreedyTwoRegretSolver(double first_weight, double second_weight) : m_first_weight(first_weight), m_second_weight(second_weight) {}
+
+private:
+    Solution _solve(const Nodes &nodes, int start_idx, int visit_count) override;
+
+    double m_first_weight;
+    double m_second_weight;
+};
+
+std::unique_ptr<AbstractSolver> createSolver(char name, double weigth1, double weight2);

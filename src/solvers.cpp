@@ -106,36 +106,16 @@ void NearestNeighbourSolver::beforeSolve(const Nodes &nodes, int start_idx)
 
 Solution GreedyCycleSolver::_solve(const Nodes &nodes, int start_idx, int visit_count)
 {
-    Solution solution;
-    solution.push_back(start_idx);
-
+    Solution solution = initializeTwoCheapest(nodes, start_idx, m_distances);
     std::vector<bool> visited(nodes.size(), false);
-    visited[start_idx] = true;
+    visited[solution[0]] = true;
+    visited[solution[1]] = true;
 
     while (solution.size() < visit_count)
     {
         int nearest_idx = -1;
         int added_idx = -1;
         int min_increase = std::numeric_limits<int>::max();
-
-        if (solution.size() == 1)
-        {
-            for (int i = 0; i < nodes.size(); i++)
-            {
-                if (i == start_idx)
-                    continue;
-
-                int increase = nodes[start_idx].distanceTo(nodes[i]) + nodes[i].getWeight();
-                if (increase < min_increase)
-                {
-                    nearest_idx = i;
-                    min_increase = increase;
-                }
-            }
-            solution.push_back(nearest_idx);
-            visited[nearest_idx] = true;
-            continue;
-        }
 
         for (int i = 0; i < nodes.size(); ++i)
         {
@@ -156,17 +136,69 @@ Solution GreedyCycleSolver::_solve(const Nodes &nodes, int start_idx, int visit_
             }
         }
 
-        if (nearest_idx != -1)
-        {
-            solution.insert(solution.begin() + added_idx + 1, nearest_idx);
-            visited[nearest_idx] = true;
-        }
+        solution.insert(solution.begin() + added_idx + 1, nearest_idx);
+        visited[nearest_idx] = true;
     }
 
     return solution;
 }
 
-std::unique_ptr<AbstractSolver> createSolver(char name)
+Solution GreedyTwoRegretSolver::_solve(const Nodes &nodes, int start_idx, int visit_count)
+{
+    Solution solution = initializeTwoCheapest(nodes, start_idx, m_distances);
+    std::vector<bool> visited(nodes.size(), false);
+    visited[solution[0]] = true;
+    visited[solution[1]] = true;
+
+    while (solution.size() < visit_count)
+    {
+        int nearest_idx = -1;
+        int best_added_idx = -1;
+
+        int max_regret = std::numeric_limits<int>::min();
+
+        for (int i = 0; i < nodes.size(); ++i)
+        {
+            if (visited[i])
+                continue;
+
+            int added_idx = -1;
+            int min_increase = std::numeric_limits<int>::max();
+            int second_min_increase = std::numeric_limits<int>::max();
+
+            for (int j = 0; j < solution.size(); ++j)
+            {
+                int next_idx = (j + 1) % solution.size();
+                int increase = m_distances[solution[j]][i] + m_distances[i][solution[next_idx]];
+                increase -= m_distances[solution[j]][solution[next_idx]];
+                increase += nodes[i].getWeight();
+                if (increase < min_increase)
+                {
+                    min_increase = increase;
+                    nearest_idx = i;
+                    added_idx = j;
+                }
+                else if (increase < second_min_increase)
+                {
+                    second_min_increase = increase;
+                }
+            }
+            int regret = std::round(min_increase * m_first_weight) - std::round(second_min_increase * m_second_weight);
+            if (regret > max_regret)
+            {
+                max_regret = regret;
+                nearest_idx = i;
+                best_added_idx = added_idx;
+            }
+        }
+
+        solution.insert(solution.begin() + best_added_idx + 1, nearest_idx);
+        visited[nearest_idx] = true;
+    }
+    return solution;
+}
+
+std::unique_ptr<AbstractSolver> createSolver(char name, double weigth1, double weight2)
 {
     switch (name)
     {
@@ -176,6 +208,8 @@ std::unique_ptr<AbstractSolver> createSolver(char name)
         return std::make_unique<NearestNeighbourSolver>();
     case 'g':
         return std::make_unique<GreedyCycleSolver>();
+    case 'd':
+        return std::make_unique<GreedyTwoRegretSolver>(weigth1, weight2);
     default:
         throw std::runtime_error("Invalid solver name");
     }
