@@ -1,4 +1,5 @@
 #include "initializers.hpp"
+#include <limits>
 
 Solution initializeTwoCheapest(const Nodes &nodes, int start_idx, const DistanceMatrix &dist)
 {
