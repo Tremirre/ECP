@@ -1,13 +1,11 @@
 #pragma once
+
 #include <vector>
 #include <memory>
 #include "random.hpp"
 #include "node.hpp"
+#include "solution.hpp"
 #include "initializers.hpp"
-
-int evaluateSolution(const Nodes &nodes, const Solution &solution);
-
-void exportSolutionToFile(const Solution &solution, const std::string &filename, int score);
 
 class AbstractSolver
 {

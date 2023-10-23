@@ -1,11 +1,11 @@
 #pragma once
 
+#include "node.hpp"
+#include "solution.hpp"
 #include <functional>
 #include <vector>
 #include <optional>
-#include "node.hpp"
 
-typedef std::vector<int> Solution;
 typedef std::vector<std::vector<int>> DistanceMatrix;
 
 Solution initializeTwoCheapest(

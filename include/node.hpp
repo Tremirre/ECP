@@ -20,4 +20,4 @@ private:
 
 typedef std::vector<Node> Nodes;
 
-Nodes readNodesFromFile(const std::string &filename);
+Nodes importNodesFromFile(const std::string &filename);

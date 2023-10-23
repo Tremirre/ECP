@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     std::string output_filename = args.getCmdOption("-o");
     output_filename = output_filename.empty() ? "solution.txt" : output_filename;
 
-    Nodes nodes = readNodesFromFile(filename);
+    Nodes nodes = importNodesFromFile(filename);
 
     std::string start_idx_str = args.getCmdOption("-i");
     start_idx_str = start_idx_str.empty() ? "0" : start_idx_str;

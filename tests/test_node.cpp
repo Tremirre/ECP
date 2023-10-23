@@ -30,7 +30,7 @@ void testNodesReadCorrectlyFromFile()
     test_file << "0;0;1\n10;0;2\n5;5;0\n";
     test_file.close();
 
-    Nodes nodes = readNodesFromFile("test_nodes.csv");
+    Nodes nodes = importNodesFromFile("test_nodes.csv");
     assert(nodes.size() == 3);
     assert(nodes[0].getX() == 0);
     assert(nodes[0].getY() == 0);

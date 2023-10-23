@@ -30,7 +30,7 @@ int Node::distanceTo(const Node &other) const noexcept
     return std::round(std::sqrt(dx * dx + dy * dy));
 }
 
-Nodes readNodesFromFile(const std::string &filename)
+Nodes importNodesFromFile(const std::string &filename)
 {
     Nodes nodes;
     std::ifstream file(filename);

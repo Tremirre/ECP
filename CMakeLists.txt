@@ -17,6 +17,8 @@ set(SOURCES
     src/random.cpp
     src/solvers.cpp
     src/initializers.cpp
+    src/solution.cpp
+    src/improvers.cpp
 )
 
 include_directories(
