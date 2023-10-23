@@ -24,8 +24,13 @@ include_directories(
 )
 include(CPack)
 
-add_executable(ECP
-    src/main.cpp
+add_executable(TSP_SOLVER
+    src/tsp_solver.cpp
+    ${SOURCES}
+)
+
+add_executable(TSP_IMPROVER
+    src/tsp_improver.cpp
     ${SOURCES}
 )
 
@@ -37,4 +42,3 @@ foreach(TEST_FILE ${TEST_FILES})
     add_executable(${TEST_NAME} ${TEST_FILE} ${SOURCES})
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endforeach()
-

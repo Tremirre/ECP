@@ -1,5 +1,5 @@
 $currentDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$program = $currentDir + "\..\build\bin\ECP"
+$program = $currentDir + "\..\build\bin\TSP_SOLVER"
 $dataPath = $currentDir + "\..\data\tsp_instances\"
 $outputPath = $currentDir + "\..\data\results\"
 
