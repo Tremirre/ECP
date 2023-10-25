@@ -1,8 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "solvers.hpp"
-#include "node.hpp"
+#include "improvers.hpp"
 #include "argparser.hpp"
 
 int main(int argc, char **argv)
@@ -26,10 +25,22 @@ int main(int argc, char **argv)
     std::string output_filename = args.getCmdOption("-o");
     output_filename = output_filename.empty() ? "solution.txt" : output_filename;
 
+    std::string improver_type = args.getCmdOption("-t");
+    if (improver_type.empty())
+    {
+        std::cout << "No improver type specified" << std::endl;
+        return 1;
+    }
+
     Nodes nodes = importNodesFromFile(instance_filename);
     Solution solution = importSolutionFromFile(solution_filename);
 
-    std::cout << "Score: " << evaluateSolution(nodes, solution) << std::endl;
+    auto improver = createImprover(improver_type[0]);
+    solution = improver->improve(solution, nodes);
+
+    int score = evaluateSolution(nodes, solution);
+    exportSolutionToFile(solution, output_filename, score);
+    std::cout << "Score: " << score << std::endl;
 
     return 0;
 }

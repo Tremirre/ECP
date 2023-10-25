@@ -37,7 +37,7 @@
         "program": "${workspaceFolder}/build/bin/TSP_IMPROVER.exe",
         "args": [
             "-f", "${workspaceFolder}/data/tsp_instances/TSPA.csv",
-            "-s", "d", "-p", "50"
+            "-s", "${workspaceFolder}/solution.txt", "-t", "g", "-o", "${workspaceFolder}/improved.txt"
         ],
         "stopAtEntry": false,
         "cwd": "${fileDirname}",
