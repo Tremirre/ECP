@@ -19,6 +19,7 @@ set(SOURCES
     src/initializers.cpp
     src/solution.cpp
     src/improvers.cpp
+    src/delta.cpp
 )
 
 include_directories(

@@ -19,5 +19,8 @@ private:
 };
 
 typedef std::vector<Node> Nodes;
+typedef std::vector<std::vector<int>> DistanceMatrix;
 
 Nodes importNodesFromFile(const std::string &filename);
+
+DistanceMatrix calculateDistanceMatrix(const Nodes &nodes);

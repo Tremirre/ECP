@@ -60,17 +60,7 @@ Solution NearestNeighbourSolver::_solve(const Nodes &nodes, int start_idx, int v
 
 void NearestNeighbourSolver::beforeSolve(const Nodes &nodes, int start_idx)
 {
-    m_distances.resize(nodes.size(), std::vector<int>(nodes.size(), 0));
-
-    for (int i = 0; i < nodes.size(); ++i)
-    {
-        for (int j = i + 1; j < nodes.size(); ++j)
-        {
-            int distance = nodes[i].distanceTo(nodes[j]);
-            m_distances[i][j] = distance;
-            m_distances[j][i] = distance;
-        }
-    }
+    m_distances = calculateDistanceMatrix(nodes);
 }
 
 Solution GreedyCycleSolver::_solve(const Nodes &nodes, int start_idx, int visit_count)

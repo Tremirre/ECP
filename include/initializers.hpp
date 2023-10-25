@@ -6,8 +6,6 @@
 #include <vector>
 #include <optional>
 
-typedef std::vector<std::vector<int>> DistanceMatrix;
-
 Solution initializeTwoCheapest(
     const Nodes &nodes,
     int start_idx,

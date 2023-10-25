@@ -63,3 +63,18 @@ Nodes importNodesFromFile(const std::string &filename)
     }
     return nodes;
 }
+
+DistanceMatrix calculateDistanceMatrix(const Nodes &nodes)
+{
+    DistanceMatrix dist(nodes.size(), std::vector<int>(nodes.size(), 0));
+    for (int i = 0; i < nodes.size(); ++i)
+    {
+        for (int j = i + 1; j < nodes.size(); ++j)
+        {
+            int distance = nodes[i].distanceTo(nodes[j]);
+            dist[i][j] = distance;
+            dist[j][i] = distance;
+        }
+    }
+    return dist;
+}
