@@ -50,7 +50,7 @@ struct OpData
             return swapEdges(sol, m_first_idx, m_second_idx);
         case OperationType::NODE_REPLACE:
             return replaceNode(sol, m_first_idx, m_second_idx);
-        case OperationType::FORBIDDEN:
+        default:
             throw std::runtime_error("Apply: Forbidden operation");
         }
     }
@@ -65,7 +65,7 @@ struct OpData
             return getEdgesSwapDelta(nodes, sol, dist, m_first_idx, m_second_idx);
         case OperationType::NODE_REPLACE:
             return getReplaceNodeDelta(nodes, sol, dist, m_first_idx, m_second_idx);
-        case OperationType::FORBIDDEN:
+        default:
             throw std::runtime_error("Evaluate: Forbidden operation");
         }
     }
