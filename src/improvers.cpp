@@ -1,5 +1,7 @@
 #include "improvers.hpp"
 #include <cmath>
+#include <iostream>
+#include <chrono>
 
 constexpr static unsigned int VAL_BITS = 15;
 constexpr static unsigned int TYPE_MASK = 0b11 << (VAL_BITS * 2);
@@ -11,7 +13,67 @@ enum class OperationType
 {
     NODE_SWAP,
     EDGE_SWAP,
-    NODE_REPLACE
+    NODE_REPLACE,
+    FORBIDDEN
+};
+
+struct OpData
+{
+    OperationType m_type;
+    int m_first_idx;
+    int m_second_idx;
+
+    OpData(int operation)
+    {
+        m_type = static_cast<OperationType>((operation & TYPE_MASK) >> (VAL_BITS * 2));
+        m_first_idx = (operation & FIRST_VAL_MASK) >> VAL_BITS;
+        m_second_idx = operation & SECOND_VAL_MASK;
+    }
+
+    OpData(OperationType type, int first_idx, int second_idx)
+        : m_type(type), m_first_idx(first_idx), m_second_idx(second_idx)
+    {
+    }
+
+    int toInt()
+    {
+        return (static_cast<int>(m_type) << (VAL_BITS * 2)) | (m_first_idx << VAL_BITS) | m_second_idx;
+    }
+
+    Solution apply(Solution &sol)
+    {
+        switch (m_type)
+        {
+        case OperationType::NODE_SWAP:
+            return swapNodes(sol, m_first_idx, m_second_idx);
+        case OperationType::EDGE_SWAP:
+            return swapEdges(sol, m_first_idx, m_second_idx);
+        case OperationType::NODE_REPLACE:
+            return replaceNode(sol, m_first_idx, m_second_idx);
+        case OperationType::FORBIDDEN:
+            throw std::runtime_error("Apply: Forbidden operation");
+        }
+    }
+
+    int evaluate(const Solution &sol, const Nodes &nodes, const DistanceMatrix &dist)
+    {
+        switch (m_type)
+        {
+        case OperationType::NODE_SWAP:
+            return getNodesSwapDelta(nodes, sol, dist, m_first_idx, m_second_idx);
+        case OperationType::EDGE_SWAP:
+            return getEdgesSwapDelta(nodes, sol, dist, m_first_idx, m_second_idx);
+        case OperationType::NODE_REPLACE:
+            return getReplaceNodeDelta(nodes, sol, dist, m_first_idx, m_second_idx);
+        case OperationType::FORBIDDEN:
+            throw std::runtime_error("Evaluate: Forbidden operation");
+        }
+    }
+
+    bool isInvalid()
+    {
+        return m_type == OperationType::FORBIDDEN;
+    }
 };
 
 std::vector<int> findMissingNumbers(const std::vector<int> &A, int N)
@@ -53,16 +115,16 @@ std::vector<int> getNeighborhoodOperations(const Solution &solution, int num_nod
     // |s| * |n| for node replacements
     num_operations += solution.size() * nodes_outside_solution.size();
 
-    std::vector<int> operations(num_operations);
+    int invalid_operation = static_cast<int>(OperationType::FORBIDDEN) << (VAL_BITS * 2);
+    std::vector<int> operations(num_operations, invalid_operation);
 
+    int op_idx = -1;
     for (int i = 0; i < solution.size(); ++i)
     {
         for (int j = i + 1; j < solution.size(); ++j)
         {
-            operations.push_back(
-                static_cast<int>(OperationType::NODE_SWAP) << (VAL_BITS * 2) |
-                (i << VAL_BITS) |
-                j);
+            OpData op(OperationType::NODE_SWAP, i, j);
+            operations[++op_idx] = op.toInt();
         }
     }
 
@@ -74,89 +136,76 @@ std::vector<int> getNeighborhoodOperations(const Solution &solution, int num_nod
             {
                 continue;
             }
-            operations.push_back(
-                static_cast<int>(OperationType::EDGE_SWAP) << (VAL_BITS * 2) |
-                (i << VAL_BITS) |
-                j);
+            OpData op(OperationType::EDGE_SWAP, i, j);
+            operations[++op_idx] = op.toInt();
         }
     }
-
     for (int i = 0; i < solution.size(); ++i)
     {
         for (int j : nodes_outside_solution)
         {
-            operations.push_back(
-                static_cast<int>(OperationType::NODE_REPLACE) << (VAL_BITS * 2) |
-                (i << VAL_BITS) |
-                j);
+            OpData op(OperationType::NODE_REPLACE, i, j);
+            operations[++op_idx] = op.toInt();
         }
     }
 
     return operations;
 }
 
-int evaluateOperation(int operation, const Solution &solution, const Nodes &nodes, const DistanceMatrix &dist)
+void updateOperationsVector(
+    std::vector<int> &operations,
+    const Solution &solution,
+    const OpData &selected_operation)
 {
-    int type = (operation & TYPE_MASK) >> (VAL_BITS * 2);
-    int first_idx = (operation & FIRST_VAL_MASK) >> VAL_BITS;
-    int second_idx = operation & SECOND_VAL_MASK;
-
-    switch (static_cast<OperationType>(type))
+    if (selected_operation.m_type != OperationType::NODE_REPLACE)
     {
-    case OperationType::NODE_SWAP:
-        return getNodesSwapDelta(nodes, solution, dist, first_idx, second_idx);
-    case OperationType::EDGE_SWAP:
-        return getEdgesSwapDelta(nodes, solution, dist, first_idx, second_idx);
-    case OperationType::NODE_REPLACE:
-        return getReplaceNodeDelta(nodes, solution, dist, first_idx, second_idx);
-    default:
-        throw std::runtime_error("Invalid operation type");
+        return;
     }
-}
-
-Solution applyOperation(int operation, Solution &solution)
-{
-    int type = (operation & TYPE_MASK) >> (VAL_BITS * 2);
-    int first_idx = (operation & FIRST_VAL_MASK) >> VAL_BITS;
-    int second_idx = operation & SECOND_VAL_MASK;
-
-    switch (static_cast<OperationType>(type))
+    int new_node = selected_operation.m_second_idx;
+    int old_node = solution[selected_operation.m_first_idx];
+    int op_node;
+    OperationType op_type;
+    for (int i = 0; i < operations.size(); ++i)
     {
-    case OperationType::NODE_SWAP:
-        return swapNodes(solution, first_idx, second_idx);
-    case OperationType::EDGE_SWAP:
-        return swapEdges(solution, first_idx, second_idx);
-    case OperationType::NODE_REPLACE:
-        return replaceNode(solution, first_idx, second_idx);
-    default:
-        throw std::runtime_error("Invalid operation type");
+        op_node = operations[i] & SECOND_VAL_MASK;
+        op_type = static_cast<OperationType>((operations[i] & TYPE_MASK) >> (VAL_BITS * 2));
+        if (op_node == new_node && op_type == OperationType::NODE_REPLACE)
+        {
+            operations[i] = (operations[i] & ~SECOND_VAL_MASK) | old_node;
+        }
     }
 }
 
 Solution GreedyImprover::improve(Solution &solution, const Nodes &nodes)
 {
     DistanceMatrix dist = calculateDistanceMatrix(nodes);
+    std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size());
+    OpData selected_operation = OpData(OperationType::FORBIDDEN, 0, 0);
+    double start_exec_time = 0;
+    double eval_exec_time = 0;
+
     while (true)
     {
-        std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size());
         std::shuffle(operations.begin(), operations.end(), m_rng);
-        int selected_operation = -1;
+        selected_operation = OpData(OperationType::FORBIDDEN, 0, 0);
         for (int operation : operations)
         {
-            int delta = evaluateOperation(operation, solution, nodes, dist);
+            OpData op(operation);
+            int delta = op.evaluate(solution, nodes, dist);
 
             if (delta < 0)
             {
-                selected_operation = operation;
+                selected_operation = op;
                 break;
             }
         }
-        if (selected_operation == -1)
+        if (selected_operation.isInvalid())
         {
             break;
         }
 
-        applyOperation(selected_operation, solution);
+        updateOperationsVector(operations, solution, selected_operation);
+        selected_operation.apply(solution);
     }
     return solution;
 }
@@ -164,30 +213,36 @@ Solution GreedyImprover::improve(Solution &solution, const Nodes &nodes)
 Solution SteepestImprover::improve(Solution &solution, const Nodes &nodes)
 {
     DistanceMatrix dist = calculateDistanceMatrix(nodes);
+    std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size());
+    OpData best_op = OpData(OperationType::FORBIDDEN, 0, 0);
+    double start_exec_time = 0;
+    double eval_exec_time = 0;
+
     while (true)
     {
-        std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size());
         int best_delta = 0;
-        int best_operation = -1;
+        best_op = OpData(OperationType::FORBIDDEN, 0, 0);
 
         for (int operation : operations)
         {
-            int delta = evaluateOperation(operation, solution, nodes, dist);
+            OpData op(operation);
+            int delta = op.evaluate(solution, nodes, dist);
 
             if (delta < best_delta)
             {
                 best_delta = delta;
-                best_operation = operation;
+                best_op = op;
             }
         }
 
-        if (best_operation == -1)
+        if (best_op.isInvalid())
         {
             break;
         }
-
-        applyOperation(best_operation, solution);
+        updateOperationsVector(operations, solution, best_op);
+        best_op.apply(solution);
     }
+
     return solution;
 }
 
