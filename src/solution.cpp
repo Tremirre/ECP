@@ -19,7 +19,8 @@ int evaluateSolution(const Nodes &nodes, const Solution &solution)
 void exportSolutionToFile(
     const Solution &solution,
     const std::string &filename,
-    int score)
+    int score,
+    int time)
 {
     std::ofstream file(filename);
     if (!file.is_open())
@@ -31,6 +32,7 @@ void exportSolutionToFile(
         file << solution[i] << '\n';
     }
     file << score << '\n';
+    file << time << '\n';
 }
 
 Solution importSolutionFromFile(const std::string &filename)
@@ -46,6 +48,8 @@ Solution importSolutionFromFile(const std::string &filename)
     {
         solution.push_back(node_idx);
     }
+    // Remove time
+    solution.pop_back();
     // Remove score
     solution.pop_back();
     return solution;

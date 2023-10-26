@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <chrono>
 
 #include "improvers.hpp"
 #include "argparser.hpp"
@@ -36,11 +37,20 @@ int main(int argc, char **argv)
     Solution solution = importSolutionFromFile(solution_filename);
 
     auto improver = createImprover(improver_type[0]);
+    const auto start = std::chrono::high_resolution_clock::now();
     solution = improver->improve(solution, nodes);
+    const auto end = std::chrono::high_resolution_clock::now();
 
+    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    int microseconds = elapsed.count();
     int score = evaluateSolution(nodes, solution);
-    exportSolutionToFile(solution, output_filename, score);
+    exportSolutionToFile(
+        solution,
+        output_filename,
+        score,
+        microseconds);
     std::cout << "Score: " << score << std::endl;
-
+    std::cout << "Time: " << elapsed.count() << "us\n";
+    std::cout << "Solution exported to " << output_filename << std::endl;
     return 0;
 }

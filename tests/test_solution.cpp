@@ -34,8 +34,9 @@ void testExportSolutionToFile()
 {
     Solution solution = {0, 1, 2, 3, 4};
     int score = 100;
-    exportSolutionToFile(solution, "test_solution.txt", score);
-
+    int time = 123;
+    exportSolutionToFile(solution, "test_solution.txt", score, time);
+    int expected[] = {0, 1, 2, 3, 4, 100, 123};
     std::ifstream test_file("test_solution.txt");
 
     assert(test_file.is_open());
@@ -44,8 +45,7 @@ void testExportSolutionToFile()
     int i = 0;
     while (std::getline(test_file, line))
     {
-        int expected = i == 5 ? score : solution[i++];
-        assert(std::stoi(line) == expected);
+        assert(std::stoi(line) == expected[i++]);
     }
     test_file.close();
 
@@ -55,7 +55,7 @@ void testExportSolutionToFile()
 void testImportSolutionFromFile()
 {
     std::ofstream test_file("test_solution.txt", std::ios::out | std::ios::trunc);
-    test_file << "0\n1\n2\n3\n4\n100\n";
+    test_file << "0\n1\n2\n3\n4\n100\n123\n";
     test_file.close();
 
     Solution solution = importSolutionFromFile("test_solution.txt");
