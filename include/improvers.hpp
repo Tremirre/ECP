@@ -6,7 +6,17 @@
 #include <vector>
 #include <memory>
 
-std::vector<int> getNeighborhoodOperations(const Solution &solution, int num_nodes);
+enum class NeighborhoodType
+{
+    INTER,
+    INTRA,
+    BOTH
+};
+
+std::vector<int> getNeighborhoodOperations(
+    const Solution &solution,
+    int num_nodes,
+    NeighborhoodType type);
 
 int evaluateOperation(int operation, const Solution &solution, const Nodes &nodes, const DistanceMatrix &dist);
 Solution applyOperation(int operation, Solution &solution);
@@ -14,18 +24,21 @@ Solution applyOperation(int operation, Solution &solution);
 class AbstractImprover
 {
 public:
-    AbstractImprover() = default;
+    AbstractImprover(NeighborhoodType ntype)
+        : m_ntype(ntype) {}
     virtual ~AbstractImprover() = default;
 
     virtual Solution improve(Solution &solution, const Nodes &nodes) = 0;
+
+protected:
+    NeighborhoodType m_ntype;
 };
 
 class GreedyImprover : public AbstractImprover
 {
 public:
-    GreedyImprover() = default;
-    ~GreedyImprover() = default;
-
+    GreedyImprover(NeighborhoodType ntype = NeighborhoodType::BOTH)
+        : AbstractImprover(ntype) {}
     Solution improve(Solution &solution, const Nodes &nodes) override;
 
 private:
@@ -35,10 +48,11 @@ private:
 class SteepestImprover : public AbstractImprover
 {
 public:
-    SteepestImprover() = default;
-    ~SteepestImprover() = default;
-
+    SteepestImprover(NeighborhoodType ntype)
+        : AbstractImprover(ntype) {}
     Solution improve(Solution &solution, const Nodes &nodes) override;
 };
 
-std::unique_ptr<AbstractImprover> createImprover(char name);
+NeighborhoodType getNeighborhoodType(const std::string &ntype);
+
+std::unique_ptr<AbstractImprover> createImprover(char name, NeighborhoodType ntype);

@@ -33,10 +33,13 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    std::string ntype = args.getCmdOption("-n");
+    ntype = ntype.empty() ? "both" : ntype;
+
     Nodes nodes = importNodesFromFile(instance_filename);
     Solution solution = importSolutionFromFile(solution_filename);
-
-    auto improver = createImprover(improver_type[0]);
+    auto resolved_ntype = getNeighborhoodType(ntype);
+    auto improver = createImprover(improver_type[0], resolved_ntype);
     const auto start = std::chrono::high_resolution_clock::now();
     solution = improver->improve(solution, nodes);
     const auto end = std::chrono::high_resolution_clock::now();

@@ -97,7 +97,10 @@ std::vector<int> findMissingNumbers(const std::vector<int> &A, int N)
     return missing_numbers;
 }
 
-std::vector<int> getNeighborhoodOperations(const Solution &solution, int num_nodes)
+std::vector<int> getNeighborhoodOperations(
+    const Solution &solution,
+    int num_nodes,
+    NeighborhoodType type)
 {
     if (num_nodes > MAX_VAL)
     {
@@ -106,46 +109,62 @@ std::vector<int> getNeighborhoodOperations(const Solution &solution, int num_nod
 
     std::vector<int> nodes_outside_solution = findMissingNumbers(solution, num_nodes);
 
-    // |s| choose 2 for node swaps
-    int num_operations = (solution.size() * (solution.size() - 1)) / 2;
+    int num_operations = 0;
 
-    // |s| choose 2 - |s| for edge swaps
-    num_operations += num_operations - solution.size();
+    if (type != NeighborhoodType::INTER)
+    {
+        // |s| choose 2 for node swaps
+        num_operations += (solution.size() * (solution.size() - 1)) / 2;
+        // |s| choose 2 - |s| for edge swaps
+        num_operations += num_operations - solution.size();
+    }
 
-    // |s| * |n| for node replacements
-    num_operations += solution.size() * nodes_outside_solution.size();
+    if (type != NeighborhoodType::INTRA)
+    {
+        // |s| * |n| for node replacements
+        num_operations += solution.size() * nodes_outside_solution.size();
+    }
 
     int invalid_operation = static_cast<int>(OperationType::FORBIDDEN) << (VAL_BITS * 2);
     std::vector<int> operations(num_operations, invalid_operation);
 
     int op_idx = -1;
-    for (int i = 0; i < solution.size(); ++i)
+
+    if (type != NeighborhoodType::INTER)
     {
-        for (int j = i + 1; j < solution.size(); ++j)
+
+        for (int i = 0; i < solution.size(); ++i)
         {
-            OpData op(OperationType::NODE_SWAP, i, j);
-            operations[++op_idx] = op.toInt();
+            for (int j = i + 1; j < solution.size(); ++j)
+            {
+                OpData op(OperationType::NODE_SWAP, i, j);
+                operations[++op_idx] = op.toInt();
+            }
+        }
+
+        for (int i = 0; i < solution.size(); ++i)
+        {
+            for (int j = i + 2; j < solution.size(); ++j)
+            {
+                if (i == 0 && j == solution.size() - 1)
+                {
+                    continue;
+                }
+                OpData op(OperationType::EDGE_SWAP, i, j);
+                operations[++op_idx] = op.toInt();
+            }
         }
     }
 
-    for (int i = 0; i < solution.size(); ++i)
+    if (type != NeighborhoodType::INTRA)
     {
-        for (int j = i + 2; j < solution.size(); ++j)
+        for (int i = 0; i < solution.size(); ++i)
         {
-            if (i == 0 && j == solution.size() - 1)
+            for (int j : nodes_outside_solution)
             {
-                continue;
+                OpData op(OperationType::NODE_REPLACE, i, j);
+                operations[++op_idx] = op.toInt();
             }
-            OpData op(OperationType::EDGE_SWAP, i, j);
-            operations[++op_idx] = op.toInt();
-        }
-    }
-    for (int i = 0; i < solution.size(); ++i)
-    {
-        for (int j : nodes_outside_solution)
-        {
-            OpData op(OperationType::NODE_REPLACE, i, j);
-            operations[++op_idx] = op.toInt();
         }
     }
 
@@ -179,7 +198,7 @@ void updateOperationsVector(
 Solution GreedyImprover::improve(Solution &solution, const Nodes &nodes)
 {
     DistanceMatrix dist = calculateDistanceMatrix(nodes);
-    std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size());
+    std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size(), m_ntype);
     OpData selected_operation = OpData(OperationType::FORBIDDEN, 0, 0);
     double start_exec_time = 0;
     double eval_exec_time = 0;
@@ -213,7 +232,7 @@ Solution GreedyImprover::improve(Solution &solution, const Nodes &nodes)
 Solution SteepestImprover::improve(Solution &solution, const Nodes &nodes)
 {
     DistanceMatrix dist = calculateDistanceMatrix(nodes);
-    std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size());
+    std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size(), m_ntype);
     OpData best_op = OpData(OperationType::FORBIDDEN, 0, 0);
     double start_exec_time = 0;
     double eval_exec_time = 0;
@@ -246,14 +265,34 @@ Solution SteepestImprover::improve(Solution &solution, const Nodes &nodes)
     return solution;
 }
 
-std::unique_ptr<AbstractImprover> createImprover(char name)
+NeighborhoodType getNeighborhoodType(const std::string &ntype)
+{
+    if (ntype == "inter")
+    {
+        return NeighborhoodType::INTER;
+    }
+    else if (ntype == "intra")
+    {
+        return NeighborhoodType::INTRA;
+    }
+    else if (ntype == "both")
+    {
+        return NeighborhoodType::BOTH;
+    }
+    else
+    {
+        throw std::runtime_error("Invalid neighborhood type");
+    }
+}
+
+std::unique_ptr<AbstractImprover> createImprover(char name, NeighborhoodType ntype)
 {
     switch (name)
     {
     case 'g':
-        return std::make_unique<GreedyImprover>();
+        return std::make_unique<GreedyImprover>(ntype);
     case 's':
-        return std::make_unique<SteepestImprover>();
+        return std::make_unique<SteepestImprover>(ntype);
     default:
         throw std::runtime_error("Invalid improver name");
     }
