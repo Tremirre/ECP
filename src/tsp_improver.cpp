@@ -50,7 +50,7 @@ int main(int argc, char **argv)
         score,
         microseconds);
     std::cout << "Score: " << score << std::endl;
-    std::cout << "Time: " << elapsed.count() << "us\n";
+    std::cout << "Time: " << elapsed.count() << " us\n";
     std::cout << "Solution exported to " << output_filename << std::endl;
     return 0;
 }

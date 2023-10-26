@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     exportSolutionToFile(solution, output_filename, score, microseconds);
     std::cout << "Used nodes: " << solution.size() << " / " << nodes.size() << std::endl;
     std::cout << "Score: " << score << std::endl;
-    std::cout << "Time (per run): " << microseconds << "us\n";
+    std::cout << "Time (per run): " << microseconds << " us\n";
     std::cout << "Solution exported to " << output_filename << std::endl;
     return 0;
 }
