@@ -15,12 +15,12 @@ def read_instance(path: str) -> np.ndarray[int]:
     return np.array(instance)
 
 
-def read_solution(path: str) -> tuple[np.ndarray[int], int]:
+def read_solution(path: str) -> tuple[np.ndarray[int], int, int]:
     with open(path, "r") as f:
         text = f.read()
 
     solution = [int(num.strip()) for num in text.split("\n") if num]
-    return np.array(solution[:-1]), solution[-1]
+    return np.array(solution[:-1]), solution[-2], solution[-1]
 
 
 def plot_solution_for_instance(
