@@ -8,8 +8,8 @@
 
 enum class NeighborhoodType
 {
-    INTER,
-    INTRA,
+    NODE,
+    EDGE,
     BOTH
 };
 

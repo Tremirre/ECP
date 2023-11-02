@@ -3,7 +3,7 @@ $program = $currentDir + "\..\build\bin\TSP_IMPROVER"
 $dataPath = $currentDir + "\..\data\tsp_instances\"
 $solutionPath = $currentDir + "\..\data\results\"
 $improvers = @("g", "s")
-$ntypes = @("both", "inter", "intra")
+$ntypes = @("both", "edge", "node")
 $solutionFiles = (Get-ChildItem "$solutionPath" -Exclude "*ls*" | Get-ChildItem -Include "*.txt").FullName
 $quadriplesList = @()
 

@@ -111,26 +111,29 @@ std::vector<int> getNeighborhoodOperations(
 
     int num_operations = 0;
 
-    if (type != NeighborhoodType::INTER)
+    int s_choose_2 = (solution.size() * (solution.size() - 1)) / 2;
+
+    if (type != NeighborhoodType::EDGE)
     {
         // |s| choose 2 for node swaps
-        num_operations += (solution.size() * (solution.size() - 1)) / 2;
-        // |s| choose 2 - |s| for edge swaps
-        num_operations += num_operations - solution.size();
+        num_operations += s_choose_2;
     }
 
-    if (type != NeighborhoodType::INTRA)
+    if (type != NeighborhoodType::NODE)
     {
-        // |s| * |n| for node replacements
-        num_operations += solution.size() * nodes_outside_solution.size();
+        // |s| choose 2 - |s| for edge swaps
+        num_operations += s_choose_2 - solution.size();
     }
+
+    // |s| * |n| for node replacements
+    num_operations += solution.size() * nodes_outside_solution.size();
 
     int invalid_operation = static_cast<int>(OperationType::FORBIDDEN) << (VAL_BITS * 2);
     std::vector<int> operations(num_operations, invalid_operation);
 
     int op_idx = -1;
 
-    if (type != NeighborhoodType::INTER)
+    if (type != NeighborhoodType::EDGE)
     {
 
         for (int i = 0; i < solution.size(); ++i)
@@ -141,7 +144,9 @@ std::vector<int> getNeighborhoodOperations(
                 operations[++op_idx] = op.toInt();
             }
         }
-
+    }
+    if (type != NeighborhoodType::NODE)
+    {
         for (int i = 0; i < solution.size(); ++i)
         {
             for (int j = i + 2; j < solution.size(); ++j)
@@ -156,15 +161,12 @@ std::vector<int> getNeighborhoodOperations(
         }
     }
 
-    if (type != NeighborhoodType::INTRA)
+    for (int i = 0; i < solution.size(); ++i)
     {
-        for (int i = 0; i < solution.size(); ++i)
+        for (int j : nodes_outside_solution)
         {
-            for (int j : nodes_outside_solution)
-            {
-                OpData op(OperationType::NODE_REPLACE, i, j);
-                operations[++op_idx] = op.toInt();
-            }
+            OpData op(OperationType::NODE_REPLACE, i, j);
+            operations[++op_idx] = op.toInt();
         }
     }
 
@@ -267,13 +269,13 @@ Solution SteepestImprover::improve(Solution &solution, const Nodes &nodes)
 
 NeighborhoodType getNeighborhoodType(const std::string &ntype)
 {
-    if (ntype == "inter")
+    if (ntype == "node")
     {
-        return NeighborhoodType::INTER;
+        return NeighborhoodType::NODE;
     }
-    else if (ntype == "intra")
+    else if (ntype == "edge")
     {
-        return NeighborhoodType::INTRA;
+        return NeighborhoodType::EDGE;
     }
     else if (ntype == "both")
     {
