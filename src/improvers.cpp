@@ -202,8 +202,6 @@ Solution GreedyImprover::improve(Solution &solution, const Nodes &nodes)
     DistanceMatrix dist = calculateDistanceMatrix(nodes);
     std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size(), m_ntype);
     OpData selected_operation = OpData(OperationType::FORBIDDEN, 0, 0);
-    double start_exec_time = 0;
-    double eval_exec_time = 0;
 
     while (true)
     {
@@ -236,8 +234,6 @@ Solution SteepestImprover::improve(Solution &solution, const Nodes &nodes)
     DistanceMatrix dist = calculateDistanceMatrix(nodes);
     std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size(), m_ntype);
     OpData best_op = OpData(OperationType::FORBIDDEN, 0, 0);
-    double start_exec_time = 0;
-    double eval_exec_time = 0;
 
     while (true)
     {
