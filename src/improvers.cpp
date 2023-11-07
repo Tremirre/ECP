@@ -9,72 +9,52 @@ constexpr static unsigned int FIRST_VAL_MASK = ((1 << VAL_BITS) - 1) << VAL_BITS
 constexpr static unsigned int SECOND_VAL_MASK = ~(TYPE_MASK | FIRST_VAL_MASK);
 constexpr static int MAX_VAL = (1 << VAL_BITS) - 1;
 
-enum class OperationType
+OpData::OpData(int operation)
 {
-    NODE_SWAP,
-    EDGE_SWAP,
-    NODE_REPLACE,
-    FORBIDDEN
-};
+    m_type = static_cast<OperationType>((operation & TYPE_MASK) >> (VAL_BITS * 2));
+    m_first_idx = (operation & FIRST_VAL_MASK) >> VAL_BITS;
+    m_second_idx = operation & SECOND_VAL_MASK;
+}
 
-struct OpData
+int OpData::toInt() const
 {
-    OperationType m_type;
-    int m_first_idx;
-    int m_second_idx;
+    return (static_cast<int>(m_type) << (VAL_BITS * 2)) | (m_first_idx << VAL_BITS) | m_second_idx;
+}
 
-    OpData(int operation)
+Solution OpData::apply(Solution &sol) const
+{
+    switch (m_type)
     {
-        m_type = static_cast<OperationType>((operation & TYPE_MASK) >> (VAL_BITS * 2));
-        m_first_idx = (operation & FIRST_VAL_MASK) >> VAL_BITS;
-        m_second_idx = operation & SECOND_VAL_MASK;
+    case OperationType::NODE_SWAP:
+        return swapNodes(sol, m_first_idx, m_second_idx);
+    case OperationType::EDGE_SWAP:
+        return swapEdges(sol, m_first_idx, m_second_idx);
+    case OperationType::NODE_REPLACE:
+        return replaceNode(sol, m_first_idx, m_second_idx);
+    default:
+        throw std::runtime_error("Apply: Forbidden operation");
     }
+}
 
-    OpData(OperationType type, int first_idx, int second_idx)
-        : m_type(type), m_first_idx(first_idx), m_second_idx(second_idx)
+int OpData::evaluate(const Solution &sol, const Nodes &nodes, const DistanceMatrix &dist) const
+{
+    switch (m_type)
     {
+    case OperationType::NODE_SWAP:
+        return getNodesSwapDelta(nodes, sol, dist, m_first_idx, m_second_idx);
+    case OperationType::EDGE_SWAP:
+        return getEdgesSwapDelta(nodes, sol, dist, m_first_idx, m_second_idx);
+    case OperationType::NODE_REPLACE:
+        return getReplaceNodeDelta(nodes, sol, dist, m_first_idx, m_second_idx);
+    default:
+        throw std::runtime_error("Evaluate: Forbidden operation");
     }
+}
 
-    int toInt()
-    {
-        return (static_cast<int>(m_type) << (VAL_BITS * 2)) | (m_first_idx << VAL_BITS) | m_second_idx;
-    }
-
-    Solution apply(Solution &sol)
-    {
-        switch (m_type)
-        {
-        case OperationType::NODE_SWAP:
-            return swapNodes(sol, m_first_idx, m_second_idx);
-        case OperationType::EDGE_SWAP:
-            return swapEdges(sol, m_first_idx, m_second_idx);
-        case OperationType::NODE_REPLACE:
-            return replaceNode(sol, m_first_idx, m_second_idx);
-        default:
-            throw std::runtime_error("Apply: Forbidden operation");
-        }
-    }
-
-    int evaluate(const Solution &sol, const Nodes &nodes, const DistanceMatrix &dist)
-    {
-        switch (m_type)
-        {
-        case OperationType::NODE_SWAP:
-            return getNodesSwapDelta(nodes, sol, dist, m_first_idx, m_second_idx);
-        case OperationType::EDGE_SWAP:
-            return getEdgesSwapDelta(nodes, sol, dist, m_first_idx, m_second_idx);
-        case OperationType::NODE_REPLACE:
-            return getReplaceNodeDelta(nodes, sol, dist, m_first_idx, m_second_idx);
-        default:
-            throw std::runtime_error("Evaluate: Forbidden operation");
-        }
-    }
-
-    bool isInvalid()
-    {
-        return m_type == OperationType::FORBIDDEN;
-    }
-};
+bool OpData::isInvalid() const
+{
+    return m_type == OperationType::FORBIDDEN;
+}
 
 std::vector<int> findMissingNumbers(const std::vector<int> &A, int N)
 {
@@ -173,10 +153,15 @@ std::vector<int> getNeighborhoodOperations(
     return operations;
 }
 
-void updateOperationsVector(
+std::vector<int> AbstractImprover::generateOperationsVector(const Solution &solution, const Nodes &nodes, const DistanceMatrix &dist)
+{
+    return getNeighborhoodOperations(solution, nodes.size(), m_ntype);
+}
+
+void AbstractImprover::updateOperationsVector(
     std::vector<int> &operations,
     const Solution &solution,
-    const OpData &selected_operation)
+    const OpData &selected_operation) const
 {
     if (selected_operation.m_type != OperationType::NODE_REPLACE)
     {
@@ -200,7 +185,7 @@ void updateOperationsVector(
 Solution GreedyImprover::improve(Solution &solution, const Nodes &nodes)
 {
     DistanceMatrix dist = calculateDistanceMatrix(nodes);
-    std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size(), m_ntype);
+    std::vector<int> operations = generateOperationsVector(solution, nodes, dist);
     OpData selected_operation = OpData(OperationType::FORBIDDEN, 0, 0);
 
     while (true)
@@ -232,7 +217,7 @@ Solution GreedyImprover::improve(Solution &solution, const Nodes &nodes)
 Solution SteepestImprover::improve(Solution &solution, const Nodes &nodes)
 {
     DistanceMatrix dist = calculateDistanceMatrix(nodes);
-    std::vector<int> operations = getNeighborhoodOperations(solution, nodes.size(), m_ntype);
+    std::vector<int> operations = generateOperationsVector(solution, nodes, dist);
     OpData best_op = OpData(OperationType::FORBIDDEN, 0, 0);
 
     while (true)
@@ -258,9 +243,116 @@ Solution SteepestImprover::improve(Solution &solution, const Nodes &nodes)
         }
         updateOperationsVector(operations, solution, best_op);
         best_op.apply(solution);
+        updateOperationsVectorPostApply(operations, solution, best_op);
     }
 
     return solution;
+}
+
+const int UNVISITED = -1;
+
+std::vector<int> SteepestCandidateImprover::generateOperationsVector(const Solution &solution, const Nodes &nodes, const DistanceMatrix &dist)
+{
+    if (m_num_candidates > nodes.size() - 1)
+    {
+        throw std::runtime_error("Too many candidates, max is " + std::to_string(nodes.size() - 1));
+    }
+    if (m_num_candidates < 1)
+    {
+        throw std::runtime_error("Too few candidates, min is 1");
+    }
+    if (m_ntype == NeighborhoodType::NODE)
+    {
+        throw std::runtime_error("SteepestCandidateImprover does not support NODE neighborhood type");
+    }
+
+    m_closest_nodes = std::vector<std::vector<int>>(nodes.size(), std::vector<int>(m_num_candidates, 0));
+    for (int i = 0; i < nodes.size(); ++i)
+    {
+        std::vector<std::pair<int, int>> closest_nodes;
+        for (int j = 0; j < nodes.size(); ++j)
+        {
+            if (i == j)
+            {
+                continue;
+            }
+            // TODO: check if this is correct
+            closest_nodes.push_back(std::make_pair(dist[i][j] + nodes[j].getWeight(), j));
+        }
+        std::sort(closest_nodes.begin(), closest_nodes.end());
+        for (int j = 0; j < m_num_candidates; ++j)
+        {
+            m_closest_nodes[i][j] = closest_nodes[j].second;
+        }
+    }
+    std::vector<int> node_solution_index(nodes.size(), UNVISITED);
+    for (int i = 0; i < solution.size(); ++i)
+    {
+        node_solution_index[solution[i]] = i;
+    }
+
+    std::vector<int> operations = std::vector<int>(m_num_candidates * solution.size() * 2, 0);
+
+    int op_idx = -1;
+    for (int i = 0; i < solution.size(); ++i)
+    {
+        int i_successor = (i + 1) % solution.size();
+        int i_predecessor = (i - 1 + solution.size()) % solution.size();
+        for (int j = 0; j < m_num_candidates; ++j)
+        {
+            int candidate = m_closest_nodes[solution[i]][j];
+            int candidate_solution_index = node_solution_index[candidate];
+            if (candidate_solution_index == UNVISITED)
+            {
+                operations[++op_idx] = OpData(OperationType::NODE_REPLACE, i_successor, candidate).toInt();
+                operations[++op_idx] = OpData(OperationType::NODE_REPLACE, i_predecessor, candidate).toInt();
+            }
+            else
+            {
+                int candidate_predecessor = (candidate_solution_index - 1 + solution.size()) % solution.size();
+                operations[++op_idx] = OpData(OperationType::EDGE_SWAP, i, candidate_solution_index).toInt();
+                operations[++op_idx] = OpData(OperationType::EDGE_SWAP, i_predecessor, candidate_predecessor).toInt();
+            }
+        }
+    }
+
+    return operations;
+}
+
+void SteepestCandidateImprover::updateOperationsVector(std::vector<int> &operations, const Solution &solution, const OpData &op) const
+{
+}
+
+void SteepestCandidateImprover::updateOperationsVectorPostApply(std::vector<int> &operations, const Solution &solution, const OpData &op) const
+{
+    std::vector<int> node_solution_index(200, UNVISITED);
+    for (int i = 0; i < solution.size(); ++i)
+    {
+        node_solution_index[solution[i]] = i;
+    }
+
+    int op_idx = -1;
+    for (int i = 0; i < solution.size(); ++i)
+    {
+        int i_successor = (i + 1) % solution.size();
+        int i_predecessor = (i - 1 + solution.size()) % solution.size();
+        for (int j = 0; j < m_num_candidates; ++j)
+        {
+            int candidate = m_closest_nodes[solution[i]][j];
+            int candidate_solution_index = node_solution_index[candidate];
+            if (candidate_solution_index == UNVISITED)
+            {
+                operations[++op_idx] = OpData(OperationType::NODE_REPLACE, i_successor, candidate).toInt();
+                operations[++op_idx] = OpData(OperationType::NODE_REPLACE, i_predecessor, candidate).toInt();
+            }
+            else
+            {
+                int candidate_predecessor = (candidate_solution_index - 1 + solution.size()) % solution.size();
+                operations[++op_idx] = OpData(OperationType::EDGE_SWAP, i, candidate_solution_index).toInt();
+                operations[++op_idx] = OpData(OperationType::EDGE_SWAP, i_predecessor, candidate_predecessor).toInt();
+            }
+        }
+    }
 }
 
 NeighborhoodType getNeighborhoodType(const std::string &ntype)
@@ -283,7 +375,7 @@ NeighborhoodType getNeighborhoodType(const std::string &ntype)
     }
 }
 
-std::unique_ptr<AbstractImprover> createImprover(char name, NeighborhoodType ntype)
+std::unique_ptr<AbstractImprover> createImprover(char name, NeighborhoodType ntype, int param)
 {
     switch (name)
     {
@@ -291,6 +383,8 @@ std::unique_ptr<AbstractImprover> createImprover(char name, NeighborhoodType nty
         return std::make_unique<GreedyImprover>(ntype);
     case 's':
         return std::make_unique<SteepestImprover>(ntype);
+    case 'c':
+        return std::make_unique<SteepestCandidateImprover>(ntype, param);
     default:
         throw std::runtime_error("Invalid improver name");
     }

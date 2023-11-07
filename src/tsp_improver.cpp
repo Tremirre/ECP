@@ -36,10 +36,14 @@ int main(int argc, char **argv)
     std::string ntype = args.getCmdOption("-n");
     ntype = ntype.empty() ? "both" : ntype;
 
+    std::string param = args.getCmdOption("-p");
+    param = param.empty() ? "0" : param;
+    int param_int = std::stoi(param);
+
     Nodes nodes = importNodesFromFile(instance_filename);
     Solution solution = importSolutionFromFile(solution_filename);
     auto resolved_ntype = getNeighborhoodType(ntype);
-    auto improver = createImprover(improver_type[0], resolved_ntype);
+    auto improver = createImprover(improver_type[0], resolved_ntype, param_int);
     const auto start = std::chrono::high_resolution_clock::now();
     solution = improver->improve(solution, nodes);
     const auto end = std::chrono::high_resolution_clock::now();
