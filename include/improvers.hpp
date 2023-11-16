@@ -33,8 +33,10 @@ struct OpData
     OpData(int operation);
     int toInt() const;
     bool isInvalid() const;
+    virtual bool isApplicable(const Solution &solution) const;
     int evaluate(const Solution &solution, const Nodes &nodes, const DistanceMatrix &dist) const;
     Solution apply(Solution &solution) const;
+    void print() const;
 };
 
 std::vector<int> getNeighborhoodOperations(
@@ -98,6 +100,21 @@ protected:
 
     std::vector<std::vector<int>> m_closest_nodes;
     int m_num_candidates;
+};
+
+class SteepestSimplePrioritizingImprover : public SteepestImprover
+{
+public:
+    SteepestSimplePrioritizingImprover(NeighborhoodType ntype)
+        : SteepestImprover(ntype)
+    {
+        if (ntype != NeighborhoodType::EDGE)
+        {
+            throw std::runtime_error("SteepestSimplePrioritizingImprover can only be used with edge neighborhood");
+        }
+    }
+
+    Solution improve(Solution &solution, const Nodes &nodes) override;
 };
 
 NeighborhoodType getNeighborhoodType(const std::string &ntype);

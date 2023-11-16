@@ -1,7 +1,7 @@
 #include "improvers.hpp"
 #include <cmath>
 #include <iostream>
-#include <chrono>
+#include <queue>
 
 constexpr static unsigned int VAL_BITS = 15;
 constexpr static unsigned int TYPE_MASK = 0b11 << (VAL_BITS * 2);
@@ -54,6 +54,36 @@ int OpData::evaluate(const Solution &sol, const Nodes &nodes, const DistanceMatr
 bool OpData::isInvalid() const
 {
     return m_type == OperationType::FORBIDDEN;
+}
+
+bool OpData::isApplicable(const Solution &solution) const
+{
+    if (m_type == OperationType::NODE_REPLACE)
+    {
+        bool replace_node_in_solution = std::find(solution.begin(), solution.end(), m_second_idx) != solution.end();
+        return !replace_node_in_solution;
+    }
+    return true;
+}
+
+void OpData::print() const
+{
+    switch (m_type)
+    {
+    case OperationType::NODE_SWAP:
+        std::cout << "Node Swap:\t";
+        break;
+    case OperationType::EDGE_SWAP:
+        std::cout << "Edge Swap:\t";
+        break;
+    case OperationType::NODE_REPLACE:
+        std::cout << "Node Replace:\t";
+        break;
+    default:
+        std::cout << "FORBIDDEN:\t";
+        break;
+    }
+    std::cout << m_first_idx << '\t' << m_second_idx << '\n';
 }
 
 std::vector<int> findMissingNumbers(const std::vector<int> &A, int N)
@@ -355,6 +385,133 @@ void SteepestCandidateImprover::updateOperationsVectorPostApply(std::vector<int>
     }
 }
 
+struct OperationDeltaPair
+{
+    int operation;
+    int delta;
+};
+
+Solution SteepestSimplePrioritizingImprover::improve(Solution &solution, const Nodes &nodes)
+{
+    DistanceMatrix dist = calculateDistanceMatrix(nodes);
+
+    auto cmp_op = [](const OperationDeltaPair o1, const OperationDeltaPair o2)
+    {
+        return o1.delta > o2.delta;
+    };
+
+    std::priority_queue<OperationDeltaPair, std::vector<OperationDeltaPair>, decltype(cmp_op)> operations_queue(cmp_op);
+    std::vector<int> operations = generateOperationsVector(solution, nodes, dist);
+
+    for (int operation : operations)
+    {
+        int delta = OpData(operation).evaluate(solution, nodes, dist);
+        if (delta >= 0)
+        {
+            continue;
+        }
+        operations_queue.push({operation, delta});
+    }
+
+    Solution prev_solution = solution;
+
+    while (!operations_queue.empty())
+    {
+        OperationDeltaPair pair = operations_queue.top();
+        OpData op(pair.operation);
+        operations_queue.pop();
+
+        if (!op.isApplicable(solution))
+        {
+            continue;
+        }
+        int new_delta = op.evaluate(solution, nodes, dist);
+        if (new_delta >= 0 || new_delta != pair.delta)
+        {
+            continue;
+        }
+
+        prev_solution = solution;
+        op.apply(solution);
+
+        // readdding changed operations for reevaluation
+        std::vector<int> nodes_outside_solution = findMissingNumbers(solution, nodes.size());
+
+        // find all node replacements that have to be reevaluated
+        for (int i = 0; i < solution.size(); i++)
+        {
+            int i_before = (i - 1 + solution.size()) % solution.size();
+            int i_after = (i + 1) % solution.size();
+            bool already_reevaluated = false;
+
+            // for node replacements, add replace operations for the replaced node
+            if (op.m_type == OperationType::NODE_REPLACE)
+            {
+                already_reevaluated = true;
+                OpData replace_op(OperationType::NODE_REPLACE, i, prev_solution[op.m_first_idx]);
+                int delta = replace_op.evaluate(solution, nodes, dist);
+                if (delta < 0)
+                {
+                    operations_queue.push({replace_op.toInt(), delta});
+                }
+            }
+
+            if (
+                solution[i] == prev_solution[i] &&
+                solution[i_before] == prev_solution[i_before] &&
+                solution[i_after] == prev_solution[i_after])
+            {
+                continue;
+            }
+
+            for (int j = 0; j < nodes_outside_solution.size(); j++)
+            {
+                if (already_reevaluated && nodes_outside_solution[j] == prev_solution[op.m_first_idx])
+                {
+                    continue;
+                }
+                OpData replace_op(OperationType::NODE_REPLACE, i, nodes_outside_solution[j]);
+                int delta = replace_op.evaluate(solution, nodes, dist);
+                if (delta < 0)
+                {
+                    operations_queue.push({replace_op.toInt(), delta});
+                }
+            }
+        }
+
+        // find all edge swaps that have to be reevaluated
+        for (int i = 0; i < solution.size(); ++i)
+        {
+            int i_successor = (i + 1) % solution.size();
+            for (int j = i + 2; j < solution.size(); ++j)
+            {
+                if (i == 0 && j == solution.size() - 1)
+                {
+                    continue;
+                }
+                int j_successor = (j + 1) % solution.size();
+
+                if (
+                    solution[i] == prev_solution[i] &&
+                    solution[j] == prev_solution[j] &&
+                    solution[i_successor] == prev_solution[i_successor] &&
+                    solution[j_successor] == prev_solution[j_successor])
+                {
+                    continue;
+                }
+
+                OpData edge_swap_op(OperationType::EDGE_SWAP, i, j);
+                int delta = edge_swap_op.evaluate(solution, nodes, dist);
+                if (delta < 0)
+                {
+                    operations_queue.push({edge_swap_op.toInt(), delta});
+                }
+            }
+        }
+    }
+    return solution;
+}
+
 NeighborhoodType getNeighborhoodType(const std::string &ntype)
 {
     if (ntype == "node")
@@ -385,6 +542,8 @@ std::unique_ptr<AbstractImprover> createImprover(char name, NeighborhoodType nty
         return std::make_unique<SteepestImprover>(ntype);
     case 'c':
         return std::make_unique<SteepestCandidateImprover>(ntype, param);
+    case 'p':
+        return std::make_unique<SteepestSimplePrioritizingImprover>(ntype);
     default:
         throw std::runtime_error("Invalid improver name");
     }
