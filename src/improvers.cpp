@@ -2,6 +2,8 @@
 #include <cmath>
 #include <iostream>
 #include <queue>
+#include <chrono>
+#include <numeric>
 
 constexpr static unsigned int VAL_BITS = 15;
 constexpr static unsigned int TYPE_MASK = 0b11 << (VAL_BITS * 2);
@@ -528,7 +530,80 @@ NeighborhoodType getNeighborhoodType(const std::string &ntype)
     }
 }
 
-std::unique_ptr<AbstractImprover> createImprover(char name, NeighborhoodType ntype, int param)
+Solution MultipleStartImprover::randomizeSolution(const NodesDistPair &nodes, int seed_idx, int target_size) const
+{
+    m_rng.seed(m_seed + seed_idx * SEED_SPREAD);
+    Solution solution = shuffledIndices(nodes.nodes.size(), m_rng);
+    solution.resize(target_size);
+    return solution;
+}
+
+Solution MultipleStartImprover::improve(Solution &solution, const NodesDistPair &nodes)
+{
+    Solution best_solution;
+    int best_score = std::numeric_limits<int>::max();
+    for (int i = 0; i < m_repeats; ++i)
+    {
+        Solution random_solution = randomizeSolution(nodes, i, solution.size());
+        auto improver = createImprover(m_improver_type, m_ntype, m_param);
+        Solution solution = improver->improve(random_solution, nodes);
+        int score = evaluateSolution(nodes.nodes, solution);
+        if (score < best_score)
+        {
+            best_score = score;
+            best_solution = solution;
+        }
+    }
+    return best_solution;
+}
+
+Solution IteratedImprover::peturb(Solution &solution, const NodesDistPair &nodes)
+{
+    auto operations = generateOperationsVector(solution, nodes);
+    std::shuffle(operations.begin(), operations.end(), m_rng);
+    Solution peturbed_solution = solution;
+    for (int i = 0; i < m_perturb_size; ++i)
+    {
+        OpData op(operations[i]);
+        op.apply(peturbed_solution);
+    }
+    return peturbed_solution;
+}
+
+Solution IteratedImprover::improve(Solution &solution, const NodesDistPair &nodes)
+{
+    Solution best_solution;
+    int best_score = std::numeric_limits<int>::max();
+    const auto start = std::chrono::high_resolution_clock::now();
+    while (true)
+    {
+        Solution peturbed_solution = peturb(solution, nodes);
+        auto improver = createImprover(m_improver_type, m_ntype, m_param);
+        Solution solved_solution = improver->improve(peturbed_solution, nodes);
+        int score = evaluateSolution(nodes.nodes, solved_solution);
+        if (score < best_score)
+        {
+            best_score = score;
+            best_solution = solved_solution;
+        }
+
+        const auto end = std::chrono::high_resolution_clock::now();
+        const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        if (elapsed.count() > m_time_limit)
+        {
+            break;
+        }
+    }
+    return best_solution;
+}
+
+std::unique_ptr<AbstractImprover> createImprover(
+    char name,
+    NeighborhoodType ntype,
+    int param,
+    char subname,
+    double subparam_1,
+    int subparam_2)
 {
     switch (name)
     {
@@ -540,6 +615,10 @@ std::unique_ptr<AbstractImprover> createImprover(char name, NeighborhoodType nty
         return std::make_unique<SteepestCandidateImprover>(ntype, param);
     case 'p':
         return std::make_unique<SteepestSimplePrioritizingImprover>(ntype);
+    case 'm':
+        return std::make_unique<MultipleStartImprover>(ntype, subname, param, subparam_1, subparam_2);
+    case 'i':
+        return std::make_unique<IteratedImprover>(ntype, subname, param, subparam_1, subparam_2);
     default:
         throw std::runtime_error("Invalid improver name");
     }

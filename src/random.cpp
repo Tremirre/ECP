@@ -1,16 +1,13 @@
 #include "random.hpp"
 
 #include <algorithm>
+#include <numeric>
 
 std::vector<int> shuffledIndices(
     std::size_t size, std::default_random_engine &rng)
 {
     std::vector<int> indices(size);
-    for (int i = 0; i < size; i++)
-    {
-        indices[i] = i;
-    }
-
+    std::iota(std::begin(indices), std::end(indices), 0);
     std::shuffle(std::begin(indices), std::end(indices), rng);
     return indices;
 };

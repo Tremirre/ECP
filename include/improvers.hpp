@@ -119,4 +119,55 @@ public:
 
 NeighborhoodType getNeighborhoodType(const std::string &ntype);
 
-std::unique_ptr<AbstractImprover> createImprover(char name, NeighborhoodType ntype, int param);
+class CompositeImprover : public AbstractImprover
+{
+public:
+    CompositeImprover(NeighborhoodType ntype, char improver_type, int param)
+        : AbstractImprover(ntype), m_improver_type(improver_type), m_param(param) {}
+
+protected:
+    char m_improver_type;
+    int m_param;
+    std::default_random_engine &m_rng = getRandomEngine();
+};
+
+class MultipleStartImprover : public CompositeImprover
+{
+public:
+    MultipleStartImprover(NeighborhoodType ntype, char improver_type, int param, int seed, int repeats)
+        : CompositeImprover(ntype, improver_type, param), m_seed(seed), m_repeats(repeats) {}
+
+    Solution improve(Solution &solution, const NodesDistPair &nodes) override;
+
+protected:
+    Solution randomizeSolution(const NodesDistPair &nodes, int seed_idx, int target_size) const;
+
+    int m_repeats;
+    int m_seed;
+
+private:
+    const int SEED_SPREAD = 1000;
+};
+
+class IteratedImprover : public CompositeImprover
+{
+public:
+    IteratedImprover(NeighborhoodType ntype, char improver_type, int param, double time_limit, int perturb_size)
+        : CompositeImprover(ntype, improver_type, param), m_time_limit(time_limit), m_perturb_size(perturb_size) {}
+
+    Solution improve(Solution &solution, const NodesDistPair &nodes) override;
+
+protected:
+    Solution peturb(Solution &solution, const NodesDistPair &nodes);
+
+    double m_time_limit;
+    int m_perturb_size;
+};
+
+std::unique_ptr<AbstractImprover> createImprover(
+    char name,
+    NeighborhoodType ntype,
+    int param,
+    char subname = 'p',
+    double subparam_1 = 10.0,
+    int subparam_2 = 10);
