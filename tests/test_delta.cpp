@@ -3,7 +3,7 @@
 #include <cassert>
 #include <iostream>
 
-const static Nodes nodes = {
+static Nodes nodes = {
     {0, 0, 5},
     {1, 3, 12},
     {4, 2, 6},
@@ -24,17 +24,19 @@ const static DistanceMatrix dist = {
     {10, 7, 7, 3, 5, 4, 8, 0},
 };
 
+const static NodesDistPair nodes_dist_pair(nodes);
+
 void testGetDeltaReplaceNode()
 {
     // Note: operations are in-place
     Solution solution = {0, 1, 2, 3, 4};
 
-    assert(getReplaceNodeDelta(nodes, solution, dist, 2, 7) == 31);
-    assert(getReplaceNodeDelta(nodes, solution, dist, 2, 2) == 0);
-    assert(getReplaceNodeDelta(nodes, solution, dist, 0, 6) == 9);
+    assert(getReplaceNodeDelta(nodes_dist_pair, solution, 2, 7) == 31);
+    assert(getReplaceNodeDelta(nodes_dist_pair, solution, 2, 2) == 0);
+    assert(getReplaceNodeDelta(nodes_dist_pair, solution, 0, 6) == 9);
 
     int original_evaluation = evaluateSolution(nodes, solution);
-    int delta = getReplaceNodeDelta(nodes, solution, dist, 3, 7);
+    int delta = getReplaceNodeDelta(nodes_dist_pair, solution, 3, 7);
     replaceNode(solution, 3, 7);
     int new_evaluation = evaluateSolution(nodes, solution);
     assert(new_evaluation - original_evaluation == delta);
@@ -45,23 +47,23 @@ void testGetDeltaSwapNodes()
     // Note: operations are in-place
     Solution solution = {0, 1, 2, 3, 4};
 
-    assert(getNodesSwapDelta(nodes, solution, dist, 1, 1) == 0);
-    assert(getNodesSwapDelta(nodes, solution, dist, 1, 3) == getNodesSwapDelta(nodes, solution, dist, 3, 1));
-    assert(getNodesSwapDelta(nodes, solution, dist, 0, 3) == 2);
-    assert(getNodesSwapDelta(nodes, solution, dist, 2, 3) == 1);
-    assert(getNodesSwapDelta(nodes, solution, dist, 0, 4) == 2);
-    assert(getNodesSwapDelta(nodes, solution, dist, 1, 4) == 1);
+    assert(getNodesSwapDelta(nodes_dist_pair, solution, 1, 1) == 0);
+    assert(getNodesSwapDelta(nodes_dist_pair, solution, 1, 3) == getNodesSwapDelta(nodes_dist_pair, solution, 3, 1));
+    assert(getNodesSwapDelta(nodes_dist_pair, solution, 0, 3) == 2);
+    assert(getNodesSwapDelta(nodes_dist_pair, solution, 2, 3) == 1);
+    assert(getNodesSwapDelta(nodes_dist_pair, solution, 0, 4) == 2);
+    assert(getNodesSwapDelta(nodes_dist_pair, solution, 1, 4) == 1);
     solution.push_back(5);
-    assert(getNodesSwapDelta(nodes, solution, dist, 1, 4) == 4);
+    assert(getNodesSwapDelta(nodes_dist_pair, solution, 1, 4) == 4);
 
     int original_evaluation = evaluateSolution(nodes, solution);
-    int delta = getNodesSwapDelta(nodes, solution, dist, 0, 5);
+    int delta = getNodesSwapDelta(nodes_dist_pair, solution, 0, 5);
     swapNodes(solution, 0, 5);
     int new_evaluation = evaluateSolution(nodes, solution);
     assert(new_evaluation - original_evaluation == delta);
 
     original_evaluation = new_evaluation;
-    delta = getNodesSwapDelta(nodes, solution, dist, 1, 4);
+    delta = getNodesSwapDelta(nodes_dist_pair, solution, 1, 4);
     swapNodes(solution, 1, 4);
     new_evaluation = evaluateSolution(nodes, solution);
     assert(new_evaluation - original_evaluation == delta);
@@ -72,22 +74,22 @@ void testGetDeltaSwapEdges()
     // Note: operations are in-place
     Solution solution = {0, 1, 2, 3, 4, 5};
 
-    assert(getEdgesSwapDelta(nodes, solution, dist, 1, 1) == 0);
-    assert(getEdgesSwapDelta(nodes, solution, dist, 1, 3) == getEdgesSwapDelta(nodes, solution, dist, 3, 1));
+    assert(getEdgesSwapDelta(nodes_dist_pair, solution, 1, 1) == 0);
+    assert(getEdgesSwapDelta(nodes_dist_pair, solution, 1, 3) == getEdgesSwapDelta(nodes_dist_pair, solution, 3, 1));
 
-    assert(getEdgesSwapDelta(nodes, solution, dist, 0, 3) == 2);
-    assert(getEdgesSwapDelta(nodes, solution, dist, 2, 3) == 0);
-    assert(getEdgesSwapDelta(nodes, solution, dist, 0, 5) == 0);
-    assert(getEdgesSwapDelta(nodes, solution, dist, 1, 4) == -1);
+    assert(getEdgesSwapDelta(nodes_dist_pair, solution, 0, 3) == 2);
+    assert(getEdgesSwapDelta(nodes_dist_pair, solution, 2, 3) == 0);
+    assert(getEdgesSwapDelta(nodes_dist_pair, solution, 0, 5) == 0);
+    assert(getEdgesSwapDelta(nodes_dist_pair, solution, 1, 4) == -1);
 
     int original_evaluation = evaluateSolution(nodes, solution);
-    int delta = getEdgesSwapDelta(nodes, solution, dist, 0, 5);
+    int delta = getEdgesSwapDelta(nodes_dist_pair, solution, 0, 5);
     swapEdges(solution, 0, 5);
     int new_evaluation = evaluateSolution(nodes, solution);
     assert(new_evaluation - original_evaluation == delta);
 
     original_evaluation = new_evaluation;
-    delta = getEdgesSwapDelta(nodes, solution, dist, 1, 4);
+    delta = getEdgesSwapDelta(nodes_dist_pair, solution, 1, 4);
     swapEdges(solution, 1, 4);
     new_evaluation = evaluateSolution(nodes, solution);
     assert(new_evaluation - original_evaluation == delta);

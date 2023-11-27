@@ -36,16 +36,16 @@ Solution OpData::apply(Solution &sol) const
     }
 }
 
-int OpData::evaluate(const Solution &sol, const Nodes &nodes, const DistanceMatrix &dist) const
+int OpData::evaluate(const Solution &sol, const NodesDistPair &nodes) const
 {
     switch (m_type)
     {
     case OperationType::NODE_SWAP:
-        return getNodesSwapDelta(nodes, sol, dist, m_first_idx, m_second_idx);
+        return getNodesSwapDelta(nodes, sol, m_first_idx, m_second_idx);
     case OperationType::EDGE_SWAP:
-        return getEdgesSwapDelta(nodes, sol, dist, m_first_idx, m_second_idx);
+        return getEdgesSwapDelta(nodes, sol, m_first_idx, m_second_idx);
     case OperationType::NODE_REPLACE:
-        return getReplaceNodeDelta(nodes, sol, dist, m_first_idx, m_second_idx);
+        return getReplaceNodeDelta(nodes, sol, m_first_idx, m_second_idx);
     default:
         throw std::runtime_error("Evaluate: Forbidden operation");
     }
@@ -183,9 +183,9 @@ std::vector<int> getNeighborhoodOperations(
     return operations;
 }
 
-std::vector<int> AbstractImprover::generateOperationsVector(const Solution &solution, const Nodes &nodes, const DistanceMatrix &dist)
+std::vector<int> AbstractImprover::generateOperationsVector(const Solution &solution, const NodesDistPair &nodes)
 {
-    return getNeighborhoodOperations(solution, nodes.size(), m_ntype);
+    return getNeighborhoodOperations(solution, nodes.nodes.size(), m_ntype);
 }
 
 void AbstractImprover::updateOperationsVector(
@@ -212,10 +212,9 @@ void AbstractImprover::updateOperationsVector(
     }
 }
 
-Solution GreedyImprover::improve(Solution &solution, const Nodes &nodes)
+Solution GreedyImprover::improve(Solution &solution, const NodesDistPair &nodes)
 {
-    DistanceMatrix dist = calculateDistanceMatrix(nodes);
-    std::vector<int> operations = generateOperationsVector(solution, nodes, dist);
+    std::vector<int> operations = generateOperationsVector(solution, nodes);
     OpData selected_operation = OpData(OperationType::FORBIDDEN, 0, 0);
 
     while (true)
@@ -225,7 +224,7 @@ Solution GreedyImprover::improve(Solution &solution, const Nodes &nodes)
         for (int operation : operations)
         {
             OpData op(operation);
-            int delta = op.evaluate(solution, nodes, dist);
+            int delta = op.evaluate(solution, nodes);
 
             if (delta < 0)
             {
@@ -244,10 +243,9 @@ Solution GreedyImprover::improve(Solution &solution, const Nodes &nodes)
     return solution;
 }
 
-Solution SteepestImprover::improve(Solution &solution, const Nodes &nodes)
+Solution SteepestImprover::improve(Solution &solution, const NodesDistPair &nodes)
 {
-    DistanceMatrix dist = calculateDistanceMatrix(nodes);
-    std::vector<int> operations = generateOperationsVector(solution, nodes, dist);
+    std::vector<int> operations = generateOperationsVector(solution, nodes);
     OpData best_op = OpData(OperationType::FORBIDDEN, 0, 0);
 
     while (true)
@@ -258,7 +256,7 @@ Solution SteepestImprover::improve(Solution &solution, const Nodes &nodes)
         for (int operation : operations)
         {
             OpData op(operation);
-            int delta = op.evaluate(solution, nodes, dist);
+            int delta = op.evaluate(solution, nodes);
 
             if (delta < best_delta)
             {
@@ -281,11 +279,11 @@ Solution SteepestImprover::improve(Solution &solution, const Nodes &nodes)
 
 const int UNVISITED = -1;
 
-std::vector<int> SteepestCandidateImprover::generateOperationsVector(const Solution &solution, const Nodes &nodes, const DistanceMatrix &dist)
+std::vector<int> SteepestCandidateImprover::generateOperationsVector(const Solution &solution, const NodesDistPair &nodes)
 {
-    if (m_num_candidates > nodes.size() - 1)
+    if (m_num_candidates > nodes.nodes.size() - 1)
     {
-        throw std::runtime_error("Too many candidates, max is " + std::to_string(nodes.size() - 1));
+        throw std::runtime_error("Too many candidates, max is " + std::to_string(nodes.nodes.size() - 1));
     }
     if (m_num_candidates < 1)
     {
@@ -296,18 +294,18 @@ std::vector<int> SteepestCandidateImprover::generateOperationsVector(const Solut
         throw std::runtime_error("SteepestCandidateImprover does not support NODE neighborhood type");
     }
 
-    m_closest_nodes = std::vector<std::vector<int>>(nodes.size(), std::vector<int>(m_num_candidates, 0));
-    for (int i = 0; i < nodes.size(); ++i)
+    m_closest_nodes = std::vector<std::vector<int>>(nodes.nodes.size(), std::vector<int>(m_num_candidates, 0));
+    for (int i = 0; i < nodes.nodes.size(); ++i)
     {
         std::vector<std::pair<int, int>> closest_nodes;
-        for (int j = 0; j < nodes.size(); ++j)
+        for (int j = 0; j < nodes.nodes.size(); ++j)
         {
             if (i == j)
             {
                 continue;
             }
             // TODO: check if this is correct
-            closest_nodes.push_back(std::make_pair(dist[i][j] + nodes[j].getWeight(), j));
+            closest_nodes.push_back(std::make_pair(nodes.dist[i][j] + nodes.nodes[j].getWeight(), j));
         }
         std::sort(closest_nodes.begin(), closest_nodes.end());
         for (int j = 0; j < m_num_candidates; ++j)
@@ -315,7 +313,7 @@ std::vector<int> SteepestCandidateImprover::generateOperationsVector(const Solut
             m_closest_nodes[i][j] = closest_nodes[j].second;
         }
     }
-    std::vector<int> node_solution_index(nodes.size(), UNVISITED);
+    std::vector<int> node_solution_index(nodes.nodes.size(), UNVISITED);
     for (int i = 0; i < solution.size(); ++i)
     {
         node_solution_index[solution[i]] = i;
@@ -391,21 +389,19 @@ struct OperationDeltaPair
     int delta;
 };
 
-Solution SteepestSimplePrioritizingImprover::improve(Solution &solution, const Nodes &nodes)
+Solution SteepestSimplePrioritizingImprover::improve(Solution &solution, const NodesDistPair &nodes)
 {
-    DistanceMatrix dist = calculateDistanceMatrix(nodes);
-
     auto cmp_op = [](const OperationDeltaPair o1, const OperationDeltaPair o2)
     {
         return o1.delta > o2.delta;
     };
 
     std::priority_queue<OperationDeltaPair, std::vector<OperationDeltaPair>, decltype(cmp_op)> operations_queue(cmp_op);
-    std::vector<int> operations = generateOperationsVector(solution, nodes, dist);
+    std::vector<int> operations = generateOperationsVector(solution, nodes);
 
     for (int operation : operations)
     {
-        int delta = OpData(operation).evaluate(solution, nodes, dist);
+        int delta = OpData(operation).evaluate(solution, nodes);
         if (delta >= 0)
         {
             continue;
@@ -425,7 +421,7 @@ Solution SteepestSimplePrioritizingImprover::improve(Solution &solution, const N
         {
             continue;
         }
-        int new_delta = op.evaluate(solution, nodes, dist);
+        int new_delta = op.evaluate(solution, nodes);
         if (new_delta >= 0 || new_delta != pair.delta)
         {
             continue;
@@ -435,7 +431,7 @@ Solution SteepestSimplePrioritizingImprover::improve(Solution &solution, const N
         op.apply(solution);
 
         // readdding changed operations for reevaluation
-        std::vector<int> nodes_outside_solution = findMissingNumbers(solution, nodes.size());
+        std::vector<int> nodes_outside_solution = findMissingNumbers(solution, nodes.nodes.size());
 
         // find all node replacements that have to be reevaluated
         for (int i = 0; i < solution.size(); i++)
@@ -449,7 +445,7 @@ Solution SteepestSimplePrioritizingImprover::improve(Solution &solution, const N
             {
                 already_reevaluated = true;
                 OpData replace_op(OperationType::NODE_REPLACE, i, prev_solution[op.m_first_idx]);
-                int delta = replace_op.evaluate(solution, nodes, dist);
+                int delta = replace_op.evaluate(solution, nodes);
                 if (delta < 0)
                 {
                     operations_queue.push({replace_op.toInt(), delta});
@@ -471,7 +467,7 @@ Solution SteepestSimplePrioritizingImprover::improve(Solution &solution, const N
                     continue;
                 }
                 OpData replace_op(OperationType::NODE_REPLACE, i, nodes_outside_solution[j]);
-                int delta = replace_op.evaluate(solution, nodes, dist);
+                int delta = replace_op.evaluate(solution, nodes);
                 if (delta < 0)
                 {
                     operations_queue.push({replace_op.toInt(), delta});
@@ -501,7 +497,7 @@ Solution SteepestSimplePrioritizingImprover::improve(Solution &solution, const N
                 }
 
                 OpData edge_swap_op(OperationType::EDGE_SWAP, i, j);
-                int delta = edge_swap_op.evaluate(solution, nodes, dist);
+                int delta = edge_swap_op.evaluate(solution, nodes);
                 if (delta < 0)
                 {
                     operations_queue.push({edge_swap_op.toInt(), delta});

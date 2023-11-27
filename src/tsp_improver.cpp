@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     param = param.empty() ? "0" : param;
     int param_int = std::stoi(param);
 
-    Nodes nodes = importNodesFromFile(instance_filename);
+    NodesDistPair nodes{importNodesFromFile(instance_filename)};
     Solution solution = importSolutionFromFile(solution_filename);
     auto resolved_ntype = getNeighborhoodType(ntype);
     auto improver = createImprover(improver_type[0], resolved_ntype, param_int);
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
     const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     int microseconds = elapsed.count();
-    int score = evaluateSolution(nodes, solution);
+    int score = evaluateSolution(nodes.nodes, solution);
     exportSolutionToFile(
         solution,
         output_filename,

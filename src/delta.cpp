@@ -1,9 +1,8 @@
 #include "delta.hpp"
 
 int getNodesSwapDelta(
-    const Nodes &nodes,
+    const NodesDistPair &nodes,
     const Solution &solution,
-    const DistanceMatrix &dist,
     int first_idx,
     int second_idx)
 {
@@ -22,27 +21,26 @@ int getNodesSwapDelta(
     int second_next = solution[(second_idx + 1) % solution.size()];
 
     int delta = 0;
-    delta += dist[first_prev][second];
-    delta += dist[first][second_next];
+    delta += nodes.dist[first_prev][second];
+    delta += nodes.dist[first][second_next];
 
-    delta -= dist[first_prev][first];
-    delta -= dist[second][second_next];
+    delta -= nodes.dist[first_prev][first];
+    delta -= nodes.dist[second][second_next];
 
     if (first_next != second)
     {
-        delta += dist[second][first_next];
-        delta += dist[second_prev][first];
-        delta -= dist[first][first_next];
-        delta -= dist[second_prev][second];
+        delta += nodes.dist[second][first_next];
+        delta += nodes.dist[second_prev][first];
+        delta -= nodes.dist[first][first_next];
+        delta -= nodes.dist[second_prev][second];
     }
 
     return delta;
 }
 
 int getEdgesSwapDelta(
-    const Nodes &nodes,
+    const NodesDistPair &nodes,
     const Solution &solution,
-    const DistanceMatrix &dist,
     int first_idx,
     int second_idx)
 {
@@ -61,19 +59,18 @@ int getEdgesSwapDelta(
         return 0;
 
     int delta = 0;
-    delta += dist[first][second];
-    delta += dist[first_next][second_next];
+    delta += nodes.dist[first][second];
+    delta += nodes.dist[first_next][second_next];
 
-    delta -= dist[first][first_next];
-    delta -= dist[second][second_next];
+    delta -= nodes.dist[first][first_next];
+    delta -= nodes.dist[second][second_next];
 
     return delta;
 }
 
 int getReplaceNodeDelta(
-    const Nodes &nodes,
+    const NodesDistPair &nodes,
     const Solution &solution,
-    const DistanceMatrix &dist,
     int sol_idx,
     int node_idx)
 {
@@ -81,12 +78,12 @@ int getReplaceNodeDelta(
     int next = solution[(sol_idx + 1) % solution.size()];
 
     int delta = 0;
-    delta += dist[prev][node_idx];
-    delta += dist[node_idx][next];
-    delta += nodes[node_idx].getWeight();
-    delta -= nodes[solution[sol_idx]].getWeight();
-    delta -= dist[prev][solution[sol_idx]];
-    delta -= dist[solution[sol_idx]][next];
+    delta += nodes.dist[prev][node_idx];
+    delta += nodes.dist[node_idx][next];
+    delta += nodes.nodes[node_idx].getWeight();
+    delta -= nodes.nodes[solution[sol_idx]].getWeight();
+    delta -= nodes.dist[prev][solution[sol_idx]];
+    delta -= nodes.dist[solution[sol_idx]][next];
 
     return delta;
 }

@@ -24,3 +24,11 @@ typedef std::vector<std::vector<int>> DistanceMatrix;
 Nodes importNodesFromFile(const std::string &filename);
 
 DistanceMatrix calculateDistanceMatrix(const Nodes &nodes);
+
+struct NodesDistPair
+{
+    Nodes nodes;
+    DistanceMatrix dist;
+
+    NodesDistPair(Nodes nodes) : nodes(std::move(nodes)), dist(calculateDistanceMatrix(this->nodes)) {}
+};
