@@ -558,12 +558,13 @@ Solution MultipleStartImprover::improve(Solution &solution, const NodesDistPair 
 
 Solution IteratedImprover::peturb(Solution &solution, const NodesDistPair &nodes)
 {
+
     for (int i = 0; i < m_perturb_size; ++i)
     {
         if (m_rng() % 2 == 0)
         {
-            auto notesOutSolution = findMissingNumbers(solution, nodes.nodes.size());
-            solution = replaceNode(solution, m_rng() % solution.size(), notesOutSolution[m_rng() % notesOutSolution.size()]);
+            auto nodesOutSolution = findMissingNumbers(solution, nodes.nodes.size());
+            solution = replaceNode(solution, m_rng() % solution.size(), nodesOutSolution[m_rng() % nodesOutSolution.size()]);
         }
         else
         {
@@ -575,29 +576,33 @@ Solution IteratedImprover::peturb(Solution &solution, const NodesDistPair &nodes
 
 Solution IteratedImprover::improve(Solution &solution, const NodesDistPair &nodes)
 {
-    Solution best_solution;
-    int best_score = std::numeric_limits<int>::max();
+    Solution best_solution = solution;
+    int best_score = evaluateSolution(nodes.nodes, solution);
     const auto start = std::chrono::high_resolution_clock::now();
     int iterations = 0;
     while (true)
     {
         Solution peturbed_solution = peturb(solution, nodes);
         auto improver = createImprover(m_improver_type, m_ntype, m_param);
-        Solution solved_solution = improver->improve(peturbed_solution, nodes);
-        int score = evaluateSolution(nodes.nodes, solved_solution);
+        peturbed_solution = improver->improve(peturbed_solution, nodes);
+        int score = evaluateSolution(nodes.nodes, peturbed_solution);
         if (score < best_score)
         {
             best_score = score;
-            best_solution = solved_solution;
+            best_solution = peturbed_solution;
+        }
+        if (score < evaluateSolution(nodes.nodes, solution))
+        {
+            solution = peturbed_solution;
         }
 
         const auto end = std::chrono::high_resolution_clock::now();
         const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        iterations++;
         if (elapsed.count() > m_time_limit)
         {
             break;
         }
-        iterations++;
     }
     std::cout << 'i' << iterations << '\n';
     return best_solution;
