@@ -105,7 +105,6 @@ std::vector<int> findMissingNumbers(const std::vector<int> &A, int N)
             missing_numbers.push_back(i);
         }
     }
-
     return missing_numbers;
 }
 
@@ -559,15 +558,19 @@ Solution MultipleStartImprover::improve(Solution &solution, const NodesDistPair 
 
 Solution IteratedImprover::peturb(Solution &solution, const NodesDistPair &nodes)
 {
-    auto operations = generateOperationsVector(solution, nodes);
-    std::shuffle(operations.begin(), operations.end(), m_rng);
-    Solution peturbed_solution = solution;
     for (int i = 0; i < m_perturb_size; ++i)
     {
-        OpData op(operations[i]);
-        op.apply(peturbed_solution);
+        if (m_rng() % 2 == 0)
+        {
+            auto notesOutSolution = findMissingNumbers(solution, nodes.nodes.size());
+            solution = replaceNode(solution, m_rng() % solution.size(), notesOutSolution[m_rng() % notesOutSolution.size()]);
+        }
+        else
+        {
+            solution = swapEdges(solution, m_rng() % solution.size(), m_rng() % solution.size());
+        }
     }
-    return peturbed_solution;
+    return solution;
 }
 
 Solution IteratedImprover::improve(Solution &solution, const NodesDistPair &nodes)
