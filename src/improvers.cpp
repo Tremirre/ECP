@@ -575,6 +575,7 @@ Solution IteratedImprover::improve(Solution &solution, const NodesDistPair &node
     Solution best_solution;
     int best_score = std::numeric_limits<int>::max();
     const auto start = std::chrono::high_resolution_clock::now();
+    int iterations = 0;
     while (true)
     {
         Solution peturbed_solution = peturb(solution, nodes);
@@ -593,7 +594,9 @@ Solution IteratedImprover::improve(Solution &solution, const NodesDistPair &node
         {
             break;
         }
+        iterations++;
     }
+    std::cout << 'i' << iterations << '\n';
     return best_solution;
 }
 
