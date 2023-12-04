@@ -3,7 +3,7 @@ $program = $currentDir + "\..\build\bin\TSP_IMPROVER"
 $dataPath = $currentDir + "\..\data\tsp_instances\"
 $solutionPath = $currentDir + "\..\data\results\"
 $solutionFiles = (Get-ChildItem "$solutionPath" -Exclude "*ls*" | Get-ChildItem -Include "*r*.txt").FullName
-$disturbSizes = @(3, 5, 10, 20, 30, 50)
+$disturbSizes = @(3, 5, 10, 20, 30, 50, 75)
 # 'o' denotes no local search improver
 $subImprovers = @('o', 'p')
 $paramList = @()
