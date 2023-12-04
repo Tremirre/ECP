@@ -1,5 +1,6 @@
 #include "improvers.hpp"
 #include "solvers.hpp"
+#include "random.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -616,11 +617,30 @@ Solution IteratedImprover::improve(Solution &solution, const NodesDistPair &node
 
 Solution LargeNeighborhoodImprover::disrupt(Solution &solution, const NodesDistPair &nodes)
 {
-    Solution disrupted_solution;
-    auto random_indices = shuffledIndices(solution.size(), m_rng);
-    for (int i = 0; i < disrupted_solution.size() - m_disrupt_size; ++i)
+    std::vector<int> costs = std::vector<int>(solution.size(), 0);
+    for (int i = 0; i < solution.size(); ++i)
     {
-        disrupted_solution.push_back(solution[random_indices[i]]);
+        auto index_before = (i - 1 + solution.size()) % solution.size();
+        auto index_after = (i + 1) % solution.size();
+        costs[i] = nodes.nodes[solution[i]].getWeight();
+        costs[i] += nodes.dist[solution[i]][solution[index_before]];
+        costs[i] += nodes.dist[solution[i]][solution[index_after]];
+    }
+
+    std::vector<int> to_remove = sampleWeightedWithoutReplacement(costs, m_disrupt_size, m_rng);
+    Solution disrupted_solution;
+    std::vector<bool> to_remove_bool(solution.size(), false);
+    for (int i : to_remove)
+    {
+        to_remove_bool[i] = true;
+    }
+
+    for (int i = 0; i < solution.size(); ++i)
+    {
+        if (!to_remove_bool[i])
+        {
+            disrupted_solution.push_back(solution[i]);
+        }
     }
     return disrupted_solution;
 }
