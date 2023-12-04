@@ -114,6 +114,34 @@
         ]
     },
     {
+        "name": "(gdb) Launch TSPA Improver LNS",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/bin/TSP_IMPROVER.exe",
+        "args": [
+            "-f", "${workspaceFolder}/data/tsp_instances/TSPA.csv",
+            "-s", "${workspaceFolder}/solution.txt", "-t", "l", "-o", "${workspaceFolder}/improved.txt", "-n", "edge",
+            "-st", "p", "-sp1", "9000000", "-sp2", "30"
+        ],
+        "stopAtEntry": false,
+        "cwd": "${fileDirname}",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+            {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            },
+            {
+                "description": "Set Disassembly Flavor to Intel",
+                "text": "-gdb-set disassembly-flavor intel",
+                "ignoreFailures": true
+            }
+        ]
+    },
+    {
         "name": "(gdb) Debug test",
         "type": "cppdbg",
         "request": "launch",
