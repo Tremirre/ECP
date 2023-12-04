@@ -20,7 +20,8 @@ void exportSolutionToFile(
     const Solution &solution,
     const std::string &filename,
     int score,
-    int time)
+    int time,
+    const std::string &extra_info)
 {
     std::ofstream file(filename);
     if (!file.is_open())
@@ -33,6 +34,10 @@ void exportSolutionToFile(
     }
     file << score << '\n';
     file << time << '\n';
+    if (!extra_info.empty())
+    {
+        file << extra_info << '\n';
+    }
 }
 
 Solution importSolutionFromFile(const std::string &filename)

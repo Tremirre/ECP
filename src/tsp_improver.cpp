@@ -12,14 +12,14 @@ int main(int argc, char **argv)
     std::string instance_filename = args.getCmdOption("-f");
     if (instance_filename.empty())
     {
-        std::cout << "No input file specified" << std::endl;
+        std::cout << "No input file specified\n";
         return 1;
     }
 
     std::string solution_filename = args.getCmdOption("-s");
     if (solution_filename.empty())
     {
-        std::cout << "No solution file specified" << std::endl;
+        std::cout << "No solution file specified\n";
         return 1;
     }
 
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     std::string improver_type = args.getCmdOption("-t");
     if (improver_type.empty())
     {
-        std::cout << "No improver type specified" << std::endl;
+        std::cout << "No improver type specified\n";
         return 1;
     }
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     const auto start = std::chrono::high_resolution_clock::now();
     solution = improver->improve(solution, nodes);
     const auto end = std::chrono::high_resolution_clock::now();
-
+    std::string extra_info = improver->additionalInfo();
     const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     int microseconds = elapsed.count();
     int score = evaluateSolution(nodes.nodes, solution);
@@ -66,9 +66,14 @@ int main(int argc, char **argv)
         solution,
         output_filename,
         score,
-        microseconds);
+        microseconds,
+        extra_info);
     std::cout << "Score: " << score << std::endl;
     std::cout << "Time: " << elapsed.count() << " us\n";
+    if (!extra_info.empty())
+    {
+        std::cout << "Additional info: " << extra_info << std::endl;
+    }
     std::cout << "Solution exported to " << output_filename << std::endl;
     return 0;
 }

@@ -1,4 +1,6 @@
 #include "improvers.hpp"
+#include "solvers.hpp"
+
 #include <cmath>
 #include <iostream>
 #include <queue>
@@ -556,6 +558,11 @@ Solution MultipleStartImprover::improve(Solution &solution, const NodesDistPair 
     return best_solution;
 }
 
+std::string IteratedImprover::additionalInfo() const
+{
+    return std::to_string(m_iterations);
+}
+
 Solution IteratedImprover::peturb(Solution &solution, const NodesDistPair &nodes)
 {
 
@@ -579,7 +586,7 @@ Solution IteratedImprover::improve(Solution &solution, const NodesDistPair &node
     Solution best_solution = solution;
     int best_score = evaluateSolution(nodes.nodes, solution);
     const auto start = std::chrono::high_resolution_clock::now();
-    int iterations = 0;
+    m_iterations = 0;
     while (true)
     {
         Solution peturbed_solution = peturb(solution, nodes);
@@ -598,14 +605,82 @@ Solution IteratedImprover::improve(Solution &solution, const NodesDistPair &node
 
         const auto end = std::chrono::high_resolution_clock::now();
         const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        iterations++;
+        ++m_iterations;
         if (elapsed.count() > m_time_limit)
         {
             break;
         }
     }
-    std::cout << 'i' << iterations << '\n';
     return best_solution;
+}
+
+Solution LargeNeighborhoodImprover::disrupt(Solution &solution, const NodesDistPair &nodes)
+{
+    Solution disrupted_solution;
+    auto random_indices = shuffledIndices(solution.size(), m_rng);
+    for (int i = 0; i < disrupted_solution.size() - m_disrupt_size; ++i)
+    {
+        disrupted_solution.push_back(solution[random_indices[i]]);
+    }
+    return disrupted_solution;
+}
+
+Solution LargeNeighborhoodImprover::repair(Solution &solution, const NodesDistPair &nodes)
+{
+    auto solver = GreedyCycleSolver();
+    solver.setStartingSolution(solution);
+    return solver.solve(nodes.nodes, 0, nodes.nodes.size() / 2);
+}
+
+Solution LargeNeighborhoodImprover::improve(Solution &solution, const NodesDistPair &nodes)
+{
+    Solution best_solution = solution;
+    int best_score = evaluateSolution(nodes.nodes, solution);
+    const auto start = std::chrono::high_resolution_clock::now();
+    m_iterations = 0;
+
+    while (true)
+    {
+        Solution disrupted_solution = disrupt(solution, nodes);
+        Solution repaired_solution = repair(disrupted_solution, nodes);
+        int repaired_score = evaluateSolution(nodes.nodes, repaired_solution);
+        int original_score = evaluateSolution(nodes.nodes, solution);
+        if (m_improver_type != 'o')
+        {
+            auto improver = createImprover(m_improver_type, m_ntype, m_param);
+            Solution improved_solution = improver->improve(repaired_solution, nodes);
+            int old_repaired_score = repaired_score;
+            repaired_score = evaluateSolution(nodes.nodes, improved_solution);
+            if (repaired_score < old_repaired_score)
+            {
+                repaired_solution = improved_solution;
+            }
+        }
+        if (repaired_score < original_score)
+        {
+            solution = repaired_solution;
+        }
+
+        if (repaired_score < best_score)
+        {
+            best_score = repaired_score;
+            best_solution = repaired_solution;
+        }
+
+        ++m_iterations;
+        const auto end = std::chrono::high_resolution_clock::now();
+        const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        if (elapsed.count() > m_time_limit)
+        {
+            break;
+        }
+    }
+    return best_solution;
+}
+
+std::string LargeNeighborhoodImprover::additionalInfo() const
+{
+    return std::to_string(m_iterations);
 }
 
 std::unique_ptr<AbstractImprover> createImprover(
@@ -630,6 +705,8 @@ std::unique_ptr<AbstractImprover> createImprover(
         return std::make_unique<MultipleStartImprover>(ntype, subname, param, subparam_1, subparam_2);
     case 'i':
         return std::make_unique<IteratedImprover>(ntype, subname, param, subparam_1, subparam_2);
+    case 'l':
+        return std::make_unique<LargeNeighborhoodImprover>(ntype, subname, param, subparam_1, subparam_2);
     default:
         throw std::runtime_error("Invalid improver name");
     }

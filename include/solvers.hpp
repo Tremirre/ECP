@@ -11,7 +11,11 @@ class AbstractSolver
 {
 public:
     Solution solve(const Nodes &nodes, int start_idx, int visit_count);
+    void setStartingSolution(const Solution &solution) { m_starting_solution = solution; }
     virtual ~AbstractSolver() = default;
+
+protected:
+    Solution m_starting_solution;
 
 private:
     virtual void beforeSolve(const Nodes &nodes, int start_idx){};

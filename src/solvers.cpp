@@ -65,10 +65,17 @@ void NearestNeighbourSolver::beforeSolve(const Nodes &nodes, int start_idx)
 
 Solution GreedyCycleSolver::_solve(const Nodes &nodes, int start_idx, int visit_count)
 {
-    Solution solution = initializeTwoCheapest(nodes, start_idx, m_distances);
+    Solution solution = m_starting_solution;
+    if (solution.empty())
+    {
+        solution = initializeTwoCheapest(nodes, start_idx, m_distances);
+    }
     std::vector<bool> visited(nodes.size(), false);
-    visited[solution[0]] = true;
-    visited[solution[1]] = true;
+
+    for (int i : solution)
+    {
+        visited[i] = true;
+    }
 
     while (solution.size() < visit_count)
     {

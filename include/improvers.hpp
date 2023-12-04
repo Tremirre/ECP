@@ -56,6 +56,8 @@ public:
 
     virtual Solution improve(Solution &solution, const NodesDistPair &nodes) = 0;
 
+    virtual std::string additionalInfo() const { return ""; }
+
 protected:
     NeighborhoodType m_ntype;
 
@@ -157,11 +159,35 @@ public:
 
     Solution improve(Solution &solution, const NodesDistPair &nodes) override;
 
+    std::string additionalInfo() const override;
+
 protected:
     Solution peturb(Solution &solution, const NodesDistPair &nodes);
 
     double m_time_limit;
     int m_perturb_size;
+    int m_iterations = 0;
+};
+
+class LargeNeighborhoodImprover : public CompositeImprover
+{
+public:
+    LargeNeighborhoodImprover(NeighborhoodType ntype, char improver_type, int param, double time_limit, int disrupt_size)
+        : CompositeImprover(ntype, improver_type, param), m_time_limit(time_limit), m_disrupt_size(disrupt_size) {}
+
+    Solution improve(Solution &solution, const NodesDistPair &nodes) override;
+
+    std::string additionalInfo() const override;
+
+protected:
+    // disrupt instead of destroy to avoid confusion with the destroy method
+    virtual Solution disrupt(Solution &solution, const NodesDistPair &nodes);
+    virtual Solution repair(Solution &solution, const NodesDistPair &nodes);
+
+    double m_time_limit;
+    int m_disrupt_size;
+    int m_iterations = 0;
+    std::default_random_engine &m_rng = getRandomEngine();
 };
 
 std::unique_ptr<AbstractImprover> createImprover(

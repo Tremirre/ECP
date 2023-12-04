@@ -7,7 +7,7 @@
 typedef std::vector<int> Solution;
 
 int evaluateSolution(const Nodes &nodes, const Solution &solution);
-void exportSolutionToFile(const Solution &solution, const std::string &filename, int score, int time);
+void exportSolutionToFile(const Solution &solution, const std::string &filename, int score, int time, const std::string &extra_info = "");
 Solution importSolutionFromFile(const std::string &filename);
 
 Solution swapNodes(Solution &solution, int first_idx, int second_idx);
