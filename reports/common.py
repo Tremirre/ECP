@@ -29,6 +29,12 @@ def read_solution_timeless(path: str) -> tuple[np.ndarray[int], int, int]:
     solution = [int(num.strip()) for num in text.split("\n") if num]
     return np.array(solution[:-1]), solution[-1]
 
+def read_solution_three_feature(path: str) -> tuple[np.ndarray[int], int, int]:
+    with open(path, "r") as f:
+        text = f.read()
+
+    solution = [int(num.strip()) for num in text.split("\n") if num]
+    return np.array(solution[:-3]), solution[-3], solution[-2], solution[-1]
 
 def plot_solution_for_instance(
     instance: np.ndarray[int], solution: np.ndarray[int], ax: plt.Axes
