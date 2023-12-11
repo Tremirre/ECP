@@ -25,11 +25,6 @@ int main(int argc, char **argv)
     std::string start_idx_str = args.getCmdOption("-i");
     start_idx_str = start_idx_str.empty() ? "0" : start_idx_str;
     int start_idx = std::stoi(start_idx_str);
-    if (start_idx < 0 || start_idx >= nodes.size())
-    {
-        std::cout << "Invali start index" << std::endl;
-        return 1;
-    }
 
     std::string start_perc_str = args.getCmdOption("-p");
     start_perc_str = start_perc_str.empty() ? "100" : start_perc_str;
