@@ -26,7 +26,7 @@ $paramList | ForEach-Object -Parallel {
     $datasetName = $solutionFilenameNoExtension.Substring(0, 4)
     $outFileName = "$datasetName-lsp-$solutionConfig.txt"
     $outFilePath = Join-Path $($using:solutionPath) $outFileName
-    $ecpArgs = "-f ""$dataset"" -s ""$solution"" -o ""$outFilePath"" -t p -n edge"
+    $ecpArgs = "-f ""$dataset"" -s ""$solution"" -o ""$outFilePath"" -t g -n edge"
     Write-Output "Processing $solutionFilename with $improver"
     $status = Start-Process $($using:program) -ArgumentList $ecpArgs -Wait -WindowStyle Hidden -PassThru
     if ($status.ExitCode -ne 0) {
