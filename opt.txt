@@ -1,0 +1,277 @@
+Node Replace:	58	48
+Delta: -7089
+Node Replace:	64	195
+Delta: -6170
+Edge Swap:	32	90
+Delta: -6124
+Edge Swap:	57	67
+Delta: -5708
+Node Replace:	16	4
+Delta: -5480
+Edge Swap:	20	50
+Delta: -4854
+Node Replace:	32	178
+Delta: -4639
+Edge Swap:	26	61
+Delta: -4505
+Node Replace:	47	141
+Delta: -3878
+Node Replace:	24	75
+Delta: -3722
+Node Replace:	78	117
+Delta: -3659
+Edge Swap:	48	70
+Delta: -3641
+Edge Swap:	81	89
+Delta: -3556
+Edge Swap:	2	83
+Delta: -3756
+Node Replace:	78	199
+Delta: -3264
+Edge Swap:	18	67
+Delta: -3243
+Edge Swap:	33	72
+Delta: -3805
+Edge Swap:	17	65
+Delta: -3085
+Edge Swap:	3	42
+Delta: -3045
+Edge Swap:	48	60
+Delta: -3025
+Node Replace:	99	135
+Delta: -3009
+Node Replace:	70	41
+Delta: -2747
+Edge Swap:	9	19
+Delta: -2656
+Edge Swap:	16	71
+Delta: -2905
+Edge Swap:	29	76
+Delta: -2986
+Edge Swap:	21	91
+Delta: -2759
+Node Replace:	9	0
+Delta: -2716
+Node Replace:	60	185
+Delta: -2514
+Node Replace:	26	72
+Delta: -2489
+Edge Swap:	63	82
+Delta: -2228
+Edge Swap:	14	74
+Delta: -2465
+Node Replace:	20	21
+Delta: -2177
+Node Replace:	58	95
+Delta: -1994
+Node Replace:	65	94
+Delta: -1761
+Node Replace:	5	163
+Delta: -1748
+Edge Swap:	34	95
+Delta: -1680
+Edge Swap:	30	52
+Delta: -2196
+Edge Swap:	26	49
+Delta: -1689
+Edge Swap:	78	90
+Delta: -1654
+Node Replace:	61	169
+Delta: -1554
+Node Replace:	86	106
+Delta: -1494
+Node Replace:	2	62
+Delta: -1446
+Node Replace:	53	112
+Delta: -1383
+Node Replace:	84	152
+Delta: -1351
+Edge Swap:	1	10
+Delta: -1344
+Node Replace:	55	80
+Delta: -1185
+Node Replace:	49	53
+Delta: -1128
+Node Replace:	0	101
+Delta: -1123
+Edge Swap:	12	48
+Delta: -1121
+Edge Swap:	28	51
+Delta: -1561
+Edge Swap:	6	19
+Delta: -1310
+Node Replace:	7	164
+Delta: -1196
+Node Replace:	94	77
+Delta: -1062
+Edge Swap:	82	94
+Delta: -1054
+Node Replace:	87	139
+Delta: -973
+Edge Swap:	52	60
+Delta: -971
+Edge Swap:	52	74
+Delta: -1312
+Edge Swap:	57	69
+Delta: -1140
+Node Replace:	68	190
+Delta: -964
+Node Replace:	15	61
+Delta: -923
+Edge Swap:	7	10
+Delta: -917
+Edge Swap:	11	24
+Delta: -893
+Node Replace:	92	11
+Delta: -872
+Node Replace:	26	36
+Delta: -868
+Edge Swap:	15	25
+Delta: -946
+Node Replace:	54	51
+Delta: -868
+Node Replace:	1	91
+Delta: -863
+Edge Swap:	0	46
+Delta: -814
+Node Replace:	6	87
+Delta: -768
+Node Replace:	63	73
+Delta: -699
+Node Replace:	48	153
+Delta: -663
+Node Replace:	13	171
+Delta: -656
+Edge Swap:	3	12
+Delta: -732
+Edge Swap:	71	93
+Delta: -645
+Node Replace:	56	123
+Delta: -613
+Node Replace:	87	121
+Delta: -609
+Edge Swap:	59	64
+Delta: -604
+Edge Swap:	38	42
+Delta: -593
+Node Replace:	35	37
+Delta: -558
+Edge Swap:	13	19
+Delta: -475
+Node Replace:	14	108
+Delta: -555
+Edge Swap:	70	78
+Delta: -463
+Edge Swap:	2	9
+Delta: -450
+Edge Swap:	81	84
+Delta: -398
+Edge Swap:	54	70
+Delta: -396
+Edge Swap:	33	38
+Delta: -378
+Edge Swap:	27	32
+Delta: -347
+Node Replace:	5	194
+Delta: -333
+Edge Swap:	89	95
+Delta: -313
+Edge Swap:	90	96
+Delta: -425
+Edge Swap:	73	78
+Delta: -299
+Edge Swap:	47	49
+Delta: -276
+Node Replace:	86	50
+Delta: -271
+Node Replace:	50	175
+Delta: -297
+Edge Swap:	41	43
+Delta: -269
+Edge Swap:	39	42
+Delta: -278
+Edge Swap:	36	39
+Delta: -573
+Edge Swap:	49	52
+Delta: -258
+Edge Swap:	0	53
+Delta: -238
+Edge Swap:	22	24
+Delta: -233
+Edge Swap:	74	78
+Delta: -219
+Edge Swap:	8	85
+Delta: -182
+Edge Swap:	40	99
+Delta: -543
+Edge Swap:	8	11
+Delta: -206
+Edge Swap:	73	78
+Delta: -180
+Edge Swap:	78	83
+Delta: -209
+Edge Swap:	46	49
+Delta: -175
+Node Replace:	77	155
+Delta: -162
+Edge Swap:	15	43
+Delta: -142
+Edge Swap:	14	16
+Delta: -220
+Edge Swap:	5	7
+Delta: -141
+Node Replace:	13	126
+Delta: -119
+Edge Swap:	27	29
+Delta: -118
+Edge Swap:	80	83
+Delta: -117
+Edge Swap:	26	35
+Delta: -113
+Edge Swap:	26	34
+Delta: -375
+Edge Swap:	21	26
+Delta: -165
+Edge Swap:	22	26
+Delta: -277
+Edge Swap:	22	24
+Delta: -125
+Edge Swap:	64	66
+Delta: -99
+Edge Swap:	95	97
+Delta: -97
+Edge Swap:	9	11
+Delta: -85
+Edge Swap:	70	72
+Delta: -79
+Edge Swap:	67	70
+Delta: -78
+Node Replace:	68	116
+Delta: -128
+Edge Swap:	66	68
+Delta: -365
+Edge Swap:	92	94
+Delta: -60
+Edge Swap:	18	20
+Delta: -49
+Edge Swap:	43	48
+Delta: -34
+Edge Swap:	43	47
+Delta: -76
+Edge Swap:	39	41
+Delta: -27
+Edge Swap:	80	82
+Delta: -24
+Edge Swap:	89	91
+Delta: -14
+Edge Swap:	31	33
+Delta: -11
+Edge Swap:	94	96
+Delta: -9
+Edge Swap:	65	67
+Delta: -5
+Edge Swap:	74	76
+Delta: -2
+Score: 78122
+Time: 15217 us
+Solution exported to improved.txt
