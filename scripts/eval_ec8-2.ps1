@@ -10,7 +10,7 @@ foreach ($solution in $solutionFiles) {
     $dataset = $solutionFilename -replace "-.*", ".csv"
     $datasetPath = Join-Path $dataPath $dataset
     $paramList += [PSCustomObject]@{
-        dataset = $datasetPath
+        dataset  = $datasetPath
         solution = $solution
     }
 }
@@ -24,7 +24,7 @@ $paramList | ForEach-Object -Parallel {
     $solutionFilenameNoExtension = $solutionFilename -replace ".txt", ""
     $solutionConfig = $solutionFilenameNoExtension.Substring(5)
     $datasetName = $solutionFilenameNoExtension.Substring(0, 4)
-    $outFileName = "$datasetName-lsp-$solutionConfig.txt"
+    $outFileName = "$datasetName-lsg-$solutionConfig.txt"
     $outFilePath = Join-Path $($using:solutionPath) $outFileName
     $ecpArgs = "-f ""$dataset"" -s ""$solution"" -o ""$outFilePath"" -t g -n edge"
     Write-Output "Processing $solutionFilename with $improver"
