@@ -190,6 +190,39 @@ protected:
     std::default_random_engine &m_rng = getRandomEngine();
 };
 
+class GeneticLocalSearchImprover : public CompositeImprover
+{
+public:
+    GeneticLocalSearchImprover(NeighborhoodType ntype, char improver_type, int param, double time_limit, int elite_size)
+        : CompositeImprover(ntype, improver_type, param), m_time_limit(time_limit), m_elite_size(elite_size) {}
+
+    Solution improve(Solution &solution, const NodesDistPair &nodes) override;
+
+    std::string additionalInfo() const override;
+
+protected:
+    struct EvaluatedSolution
+    {
+        Solution solution;
+        int cost;
+
+        bool operator<(const EvaluatedSolution &other) const noexcept
+        {
+            return cost < other.cost;
+        }
+    };
+
+    typedef std::vector<EvaluatedSolution> Population;
+
+    Solution recombine(Solution &s1, Solution &s2, const Nodes &nodes) const noexcept;
+    Population initializePopulation(const NodesDistPair &nodes) noexcept;
+
+    double m_time_limit;
+    int m_elite_size;
+    int m_iterations = 0;
+    std::default_random_engine &m_rng = getRandomEngine();
+};
+
 std::unique_ptr<AbstractImprover> createImprover(
     char name,
     NeighborhoodType ntype,
