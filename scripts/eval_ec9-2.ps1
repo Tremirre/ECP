@@ -43,7 +43,7 @@ $paramList | ForEach-Object -Parallel {
     $datasetName = $solutionFilenameNoExtension.Substring(0, 4)
     $runningTime = $($using:datasetTimes)[$datasetName]
 
-    $outFileName = "$datasetName-lsn$improver-$disturb-$solutionConfig.txt"
+    $outFileName = "$datasetName-lse$improver-$disturb-$solutionConfig.txt"
     $outFilePath = Join-Path $($using:solutionPath) $outFileName
     $ecpArgs = "-f ""$dataset"" -s ""$solution"" -o ""$outFilePath"" -t e -n edge -st $improver -sp1 $runningTime -sp2 $disturb"
     Write-Output "Processing $solutionFilename with $improver"
