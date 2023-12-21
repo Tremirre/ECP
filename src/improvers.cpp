@@ -714,6 +714,7 @@ Solution GeneticLocalSearchImprover::improve(Solution &solution, const NodesDist
     m_iterations = 0;
     while (true)
     {
+        m_iterations++;
         bool in_population = false;
         std::vector<int> indices = shuffledIndices(population.size(), m_rng);
         int index_1 = indices[0];
