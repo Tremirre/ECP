@@ -745,7 +745,6 @@ Solution GeneticLocalSearchImprover::improve(Solution &solution, const NodesDist
 
         const auto end = std::chrono::high_resolution_clock::now();
         const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        std::cout << ++m_iterations << '\t' << population.front().cost << '\t' << cost << '\n';
         if (elapsed.count() > m_time_limit)
         {
             break;
@@ -823,7 +822,6 @@ Segments parseEdgesToSegments(Edges &edges)
             {
                 std::reverse(segment_2.begin(), segment_2.end());
             }
-            // concatenate segments
             segment_1.insert(segment_1.end(), segment_2.begin(), segment_2.end());
             segments.erase(segments.begin() + matching_segments[1]);
         }
@@ -867,6 +865,7 @@ Solution GeneticLocalSearchImprover::recombine(Solution &s1, Solution &s2, const
                           std::back_inserter(common_edges));
 
     Segments segments = parseEdgesToSegments(common_edges);
+
     std::shuffle(segments.begin(), segments.end(), m_rng);
     std::vector<int> child = segments[0];
     for (int i = 1; i < segments.size(); ++i)
