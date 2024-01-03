@@ -886,7 +886,7 @@ GeneticLocalSearchImprover::Population GeneticLocalSearchImprover::initializePop
     {
         Solution instance = shuffledIndices(nodes.nodes.size(), m_rng);
         instance.resize(nodes.nodes.size() / 2);
-        auto improver = GreedyImprover(NeighborhoodType::EDGE);
+        auto improver = SteepestSimplePrioritizingImprover(NeighborhoodType::EDGE);
         auto improved = improver.improve(instance, nodes);
         int cost = evaluateSolution(nodes.nodes, improved);
         bool in_population = false;
