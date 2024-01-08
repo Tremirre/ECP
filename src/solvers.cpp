@@ -27,11 +27,19 @@ void RandomSolver::beforeSolve(const Nodes &nodes, int start_idx)
 
 Solution NearestNeighbourSolver::_solve(const Nodes &nodes, int start_idx, int visit_count)
 {
-    Solution solution;
-    solution.push_back(start_idx);
+    Solution solution = m_starting_solution;
     std::vector<bool> visited(nodes.size(), false);
-    visited[start_idx] = true;
-    int current_idx = start_idx;
+    if (solution.empty())
+    {
+        solution.push_back(start_idx);
+    }
+
+    for (int i : solution)
+    {
+        visited[i] = true;
+    }
+
+    int current_idx = solution[solution.size() - 1];
 
     for (int i = 0; i < visit_count - 1; ++i)
     {
@@ -111,10 +119,16 @@ Solution GreedyCycleSolver::_solve(const Nodes &nodes, int start_idx, int visit_
 
 Solution GreedyTwoRegretSolver::_solve(const Nodes &nodes, int start_idx, int visit_count)
 {
-    Solution solution = initializeTwoCheapest(nodes, start_idx, m_distances);
+    Solution solution = m_starting_solution;
     std::vector<bool> visited(nodes.size(), false);
-    visited[solution[0]] = true;
-    visited[solution[1]] = true;
+    if (solution.empty())
+    {
+        solution = initializeTwoCheapest(nodes, start_idx, m_distances);
+    }
+    for (int i : solution)
+    {
+        visited[i] = true;
+    }
 
     while (solution.size() < visit_count)
     {
