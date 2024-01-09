@@ -3,7 +3,7 @@ $program = $currentDir + "\..\build\bin\TSP_IMPROVER"
 $dataPath = $currentDir + "\..\data\tsp_instances\"
 $solutionPath = $currentDir + "\..\data\results\"
 $solutionFiles = (Get-ChildItem "$solutionPath" -Exclude "*ls*" | Get-ChildItem -Include "*r*.txt").FullName
-$disturbSizes = @(20, 40)
+$disturbSizes = @(5, 10, 20, 30, 50)
 $paramList = @()
 
 $datasetTimes = [System.Collections.Generic.Dictionary[string, int]]::new()
@@ -48,4 +48,4 @@ $paramList | ForEach-Object -Parallel {
         Write-Error "Error processing $solution with $improver"
         Write-Error $status
     }
-} -ThrottleLimit 48
+} -ThrottleLimit 4
