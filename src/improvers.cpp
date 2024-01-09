@@ -911,6 +911,30 @@ GeneticLocalSearchImprover::Population GeneticLocalSearchImprover::initializePop
     return population;
 }
 
+Solution
+AlternativeGeneticLocalSearchImprover::recombine(Solution &s1, Solution &s2, const Nodes &nodes) const noexcept
+{
+    Solution child;
+    std::vector<bool> used(nodes.size(), false);
+
+    for (int i = 0; i < s1.size(); ++i)
+    {
+        auto selected = s1[i];
+        if (nodes[selected].getWeight() > nodes[s2[i]].getWeight())
+        {
+            selected = s2[i];
+        }
+        if (!used[selected])
+        {
+            child.push_back(selected);
+            used[selected] = true;
+        }
+    }
+    auto solver = GreedyCycleSolver();
+    solver.setStartingSolution(child);
+    return solver.solve(nodes, 0, s1.size());
+}
+
 std::unique_ptr<AbstractImprover> createImprover(
     char name,
     NeighborhoodType ntype,
@@ -937,6 +961,8 @@ std::unique_ptr<AbstractImprover> createImprover(
         return std::make_unique<LargeNeighborhoodImprover>(ntype, subname, param, subparam_1, subparam_2);
     case 'e':
         return std::make_unique<GeneticLocalSearchImprover>(ntype, subname, param, subparam_1, subparam_2);
+    case 'a':
+        return std::make_unique<AlternativeGeneticLocalSearchImprover>(ntype, subname, param, subparam_1, subparam_2);
     default:
         throw std::runtime_error("Invalid improver name");
     }

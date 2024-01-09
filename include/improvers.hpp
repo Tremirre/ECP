@@ -214,8 +214,8 @@ protected:
 
     typedef std::vector<EvaluatedSolution> Population;
 
-    Solution recombine(Solution &s1, Solution &s2, const Nodes &nodes) const noexcept;
-    Population initializePopulation(const NodesDistPair &nodes) noexcept;
+    virtual Solution recombine(Solution &s1, Solution &s2, const Nodes &nodes) const noexcept;
+    virtual Population initializePopulation(const NodesDistPair &nodes) noexcept;
 
     double m_time_limit;
     int m_elite_size;
@@ -223,7 +223,17 @@ protected:
     std::default_random_engine &m_rng = getRandomEngine();
 };
 
-std::unique_ptr<AbstractImprover> createImprover(
+class AlternativeGeneticLocalSearchImprover : public GeneticLocalSearchImprover
+{
+public:
+    AlternativeGeneticLocalSearchImprover(NeighborhoodType ntype, char improver_type, int param, double time_limit, int elite_size)
+        : GeneticLocalSearchImprover(ntype, improver_type, param, time_limit, elite_size) {}
+
+    Solution recombine(Solution &s1, Solution &s2, const Nodes &nodes) const noexcept override;
+};
+
+std::unique_ptr<AbstractImprover>
+createImprover(
     char name,
     NeighborhoodType ntype,
     int param,
